@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Ansh AI — Authentication</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#131313",
+            "surface-container": "#201f1f",
+            "surface-container-low": "#1c1b1b",
+            "primary": "#adc6ff",
+            "secondary": "#ddb7ff",
+            "on-surface": "#e5e2e1",
+            "on-surface-variant": "#c1c6d7",
+          },
+          fontFamily: {
+            "display": ["Sora", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@500;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+  <!-- Glow Backgrounds -->
+  <div class="absolute -top-32 -left-32 w-80 h-80 bg-primary rounded-full blur-[140px] opacity-15 pointer-events-none"></div>
+  <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-secondary rounded-full blur-[140px] opacity-10 pointer-events-none"></div>
+
+  <div class="w-full max-w-md bg-surface-container/40 backdrop-blur-3xl p-8 rounded-3xl border border-white/10 shadow-2xl flex flex-col items-center text-center relative z-10">
+    
+    <!-- Logo -->
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary/30 to-secondary/30 border border-primary/40 flex items-center justify-center text-primary shadow-[0_0_25px_rgba(173,198,255,0.3)] mb-4">
+      <span class="material-symbols-outlined text-3xl">smart_toy</span>
+    </div>
+
+    <h1 class="text-2xl font-display font-bold text-on-surface tracking-tight">Ansh AI</h1>
+    <span class="text-xs font-mono text-primary uppercase tracking-widest mt-1 mb-6">Mission Control Gateway</span>
+
+    <p class="text-xs text-on-surface-variant mb-6 leading-relaxed">
+      Enter the 6-character session security key shown on your ANSH Desktop HUD to authenticate.
+    </p>
+
+    <!-- Key Input -->
+    <div class="w-full mb-6">
+      <input id="key-input" maxlength="6" autofocus class="w-full py-4 text-center text-3xl font-mono font-bold tracking-[0.3em] uppercase bg-surface-container-low/70 border border-white/10 rounded-2xl focus:border-primary text-primary focus:outline-none transition-all placeholder:text-on-surface-variant/30" placeholder="••••••" type="text" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+
+    <!-- Submit Button -->
+    <button onclick="doLogin()" class="w-full py-3.5 rounded-2xl bg-primary text-[#002e69] font-semibold font-body text-sm hover:opacity-90 shadow-[0_0_20px_rgba(173,198,255,0.25)] transition-all flex items-center justify-center gap-2">
+      <span>Authenticate Session</span>
+      <span class="material-symbols-outlined text-sm">login</span>
+    </button>
+
+    <div id="error-msg" class="text-xs font-mono text-red-400 mt-4 hidden"></div>
+
+    <div class="text-[11px] font-mono text-on-surface-variant/40 mt-8">
+      ANSH OS v4.2.0 • End-to-End Secure
+    </div>
+  </div>
+
+  <script>
+    async function doLogin() {
+      const key = document.getElementById('key-input').value.trim();
+      const errBox = document.getElementById('error-msg');
+      errBox.classList.add('hidden');
+
+      if (!key) return;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+        const data = await res.json();
+        if (data.ok && data.token) {
+          sessionStorage.setItem('ansh_token', data.token);
+          location.href = '/?token=' + encodeURIComponent(data.token);
+        } else {
+          errBox.innerText = data.error || 'Invalid session key';
+          errBox.classList.remove('hidden');
+        }
+      } catch(e) {
+        errBox.innerText = 'Connection error. Please try again.';
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    // Auto-login if key is in URL query parameters
+    const params = new URLSearchParams(location.search);
+    const urlKey = params.get('key');
+    if (urlKey) {
+      document.getElementById('key-input').value = urlKey;
+      doLogin();
+    }
+  </script>
+</body>
+</html>
