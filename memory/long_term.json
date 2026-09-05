@@ -1,0 +1,31 @@
+{
+    "identity": {
+        "assistant_name": {
+            "value": "ANSH - Your Own AI Friend",
+            "updated": "2026-09-05",
+            "importance": "High",
+            "confidence": "High",
+            "status": "Current"
+        },
+        "developer": {
+            "value": "Created and Developed by Anshu Dubey",
+            "updated": "2026-09-05",
+            "importance": "High",
+            "confidence": "High",
+            "status": "Current"
+        }
+    },
+    "preferences": {},
+    "projects": {
+        "ansh_ai": {
+            "value": "Production AI Assistant — ANSH Your Own AI Friend",
+            "updated": "2026-09-05",
+            "importance": "High",
+            "confidence": "High",
+            "status": "Current"
+        }
+    },
+    "relationships": {},
+    "wishes": {},
+    "notes": {}
+}
