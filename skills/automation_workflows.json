@@ -1,0 +1,16 @@
+{
+  "id": "automation_workflows",
+  "name": "Automation & Multi-Step Workflows",
+  "description": "Executes predefined and user-customized multi-step routines across apps, system settings, browser, and files.",
+  "category": "automation",
+  "author": "Ansh Core",
+  "version": "1.0.0",
+  "builtins": [
+    "dev_mode",
+    "focus_mode",
+    "media_mode",
+    "night_mode",
+    "clean_temp",
+    "morning_routine"
+  ]
+}
