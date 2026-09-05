@@ -1,0 +1,8 @@
+{
+  "id": "hardware_telemetry",
+  "name": "Hardware Telemetry & Process Controller",
+  "description": "Continuous real-time telemetry streaming for CPU, RAM, GPU, Battery, Storage, Temperatures, and process management.",
+  "category": "hardware",
+  "author": "Ansh Core",
+  "version": "1.0.0"
+}
