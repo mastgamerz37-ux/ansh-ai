@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  <title>Ansh AI — Mission Control & Command Center</title>
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; background: #131313; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+    .glass-panel {
+      background: rgba(32, 31, 31, 0.45);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(32, 31, 31, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulseGlow { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+    .mic-pulsing { animation: pulseGlow 1.2s infinite ease-in-out; }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-fixed": "#e5e2e1",
+            "on-primary-container": "#00285c",
+            "surface-bright": "#393939",
+            "tertiary": "#c9c6c5",
+            "surface-variant": "#353534",
+            "on-secondary": "#4a0080",
+            "primary-container": "#4b8eff",
+            "background": "#131313",
+            "error-container": "#93000a",
+            "surface-dim": "#131313",
+            "surface": "#131313",
+            "on-surface": "#e5e2e1",
+            "surface-container-highest": "#353534",
+            "secondary-fixed": "#f0dbff",
+            "secondary": "#ddb7ff",
+            "on-surface-variant": "#c1c6d7",
+            "outline-variant": "#414755",
+            "surface-tint": "#adc6ff",
+            "on-tertiary-fixed-variant": "#474646",
+            "primary-fixed-dim": "#adc6ff",
+            "on-primary": "#002e69",
+            "on-primary-fixed": "#001a41",
+            "surface-container": "#201f1f",
+            "outline": "#8b90a0",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed-dim": "#ddb7ff",
+            "on-secondary-fixed-variant": "#6900b3",
+            "surface-container-low": "#1c1b1b",
+            "on-tertiary": "#313030",
+            "tertiary-container": "#929090",
+            "on-tertiary-container": "#2a2a29",
+            "on-error": "#690005",
+            "surface-container-high": "#2a2a2a",
+            "on-tertiary-fixed": "#1c1b1b",
+            "on-secondary-fixed": "#2c0050",
+            "secondary-container": "#7900cd",
+            "inverse-surface": "#e5e2e1",
+            "inverse-on-surface": "#313030",
+            "on-background": "#e5e2e1",
+            "surface-container-lowest": "#0e0e0e",
+            "tertiary-fixed-dim": "#c9c6c5",
+            "on-primary-fixed-variant": "#004493",
+            "inverse-primary": "#005bc1",
+            "primary-fixed": "#d8e2ff",
+            "on-secondary-container": "#ddb7ff",
+            "primary": "#adc6ff",
+            "error": "#ffb4ab"
+          },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+          spacing: { "unit": "8px", "container-padding": "24px", "stack-gap": "12px", "section-margin": "64px", "gutter": "16px" },
+          fontFamily: {
+            "body-md": ["Inter", "sans-serif"],
+            "display-lg": ["Sora", "sans-serif"],
+            "body-sm": ["Inter", "sans-serif"],
+            "label-mono": ["JetBrains Mono", "monospace"],
+            "headline-md": ["Sora", "sans-serif"],
+            "display-lg-mobile": ["Sora", "sans-serif"]
+          },
+          fontSize: {
+            "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.05em", "fontWeight": "700" }],
+            "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400" }],
+            "label-mono": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "500" }],
+            "headline-md": ["24px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "display-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Sora:wght@100..900&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-background font-body-md text-on-background min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary">
+
+  <!-- TOP HEADER NAV -->
+  <header class="fixed top-2 w-full z-50 px-container-padding">
+    <nav class="h-16 w-full max-w-7xl mx-auto flex items-center justify-between px-6 bg-surface-container/60 backdrop-blur-3xl rounded-full border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-500">
+      
+      <!-- LOGO & BRAND -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchNavTab('dashboard')">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/40 shadow-[0_0_15px_rgba(173,198,255,0.25)]">
+          <span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+        </div>
+        <span class="font-display-lg-mobile text-xl tracking-tight text-on-surface font-bold">Ansh <span class="text-primary text-sm font-label-mono px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">AI</span></span>
+      </div>
+
+      <!-- NAVIGATION TABS -->
+      <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-surface-container-low/60 rounded-full border border-outline-variant/20 shadow-inner">
+        <button onclick="switchNavTab('dashboard')" id="nav-dashboard" class="nav-tab-btn px-4 py-2 font-label-mono text-xs rounded-full transition-all bg-primary/20 text-primary border border-primary/30 font-semibold shadow-sm">Dashboard</button>
+        <button onclick="switchNavTab('assistant')" id="nav-assistant" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">Assistant</button>
+        <button onclick="switchNavTab('memory')" id="nav-memory" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">Memory</button>
+        <button onclick="switchNavTab('knowledge')" id="nav-knowledge" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">Knowledge</button>
+        <button onclick="switchNavTab('projects')" id="nav-projects" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">Projects</button>
+        <button onclick="switchNavTab('security')" id="nav-security" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">Security</button>
+        <button onclick="switchNavTab('system')" id="nav-system" class="nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all">System</button>
+      </div>
+
+      <!-- RIGHT STATUS & CONTROLS -->
+      <div class="flex items-center gap-4">
+        <div id="live-status-pill" class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low/60 border border-outline-variant/20">
+          <div id="status-dot" class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(173,198,255,0.8)]"></div>
+          <span id="status-label" class="text-label-mono text-[11px] font-label-mono text-on-surface-variant">Live Sync</span>
+        </div>
+        <div class="h-6 w-[1px] bg-outline-variant/30 hidden sm:block"></div>
+        <button onclick="triggerQuickMic()" id="hdr-mic-btn" class="w-9 h-9 rounded-full bg-surface-container-low border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary/40 transition-all">
+          <span class="material-symbols-outlined text-lg">mic</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="w-full pt-24 px-container-padding flex-1 bg-background relative overflow-x-hidden">
+    
+    <!-- GLOW AMBIENT BACKDROPS -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-primary rounded-full blur-[140px] opacity-15 pointer-events-none mix-blend-screen"></div>
+    <div class="absolute top-20 right-0 w-80 h-80 bg-secondary rounded-full blur-[120px] opacity-10 pointer-events-none mix-blend-screen"></div>
+
+    <div class="w-full max-w-7xl mx-auto pb-24">
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: DASHBOARD / MISSION CONTROL                                  -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-dashboard" class="tab-content active">
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative z-10 w-full mt-2">
+          
+          <!-- LEFT HERO & CONTROLS (8 Cols) -->
+          <div class="lg:col-span-8 flex flex-col gap-stack-gap">
+            <div class="flex items-end justify-between mb-2">
+              <div class="flex flex-col">
+                <span class="text-label-mono font-label-mono text-primary uppercase tracking-widest opacity-80 mb-1">Status: Active</span>
+                <h1 class="text-display-lg font-display-lg text-on-surface tracking-tight font-bold">Mission Control</h1>
+              </div>
+              <div class="hidden sm:flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_12px_rgba(173,198,255,0.8)]"></div>
+                <span class="text-label-mono font-label-mono text-on-surface-variant">System Online</span>
+              </div>
+            </div>
+
+            <!-- LIVE WAVEFORM CANVAS CONTAINER -->
+            <div class="relative w-full h-[360px] md:h-[440px] rounded-2xl glass-panel shadow-2xl overflow-hidden group">
+              <div class="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent pointer-events-none"></div>
+              
+              <!-- Live Waveform Visualizer Canvas -->
+              <canvas id="hero-waveform" class="w-full h-full block absolute inset-0"></canvas>
+
+              <!-- Top metrics overlay -->
+              <div class="absolute top-6 left-6 z-10 flex gap-3">
+                <div class="flex items-center gap-2.5 bg-surface-container-low/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
+                  <span class="material-symbols-outlined text-primary text-sm">memory</span>
+                  <span id="hero-core-usage" class="text-label-mono font-label-mono text-on-surface text-xs font-semibold">Core Usage: 38%</span>
+                </div>
+                <div class="flex items-center gap-2 bg-surface-container-low/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg hidden sm:flex">
+                  <span class="material-symbols-outlined text-secondary text-sm">wifi_tethering</span>
+                  <span class="text-label-mono font-label-mono text-on-surface text-xs">Live API: Gemini 2.5</span>
+                </div>
+              </div>
+
+              <!-- Bottom interactive row -->
+              <div class="absolute bottom-6 left-6 right-6 z-10 flex flex-wrap justify-between items-end gap-4">
+                <div class="flex flex-col gap-1">
+                  <span class="text-label-mono font-label-mono text-on-surface-variant text-xs uppercase tracking-wider">Waveform Sync</span>
+                  <span class="text-headline-md font-headline-md text-on-surface flex items-center font-bold">Stable <span class="text-primary text-sm ml-2 font-label-mono px-2 py-0.5 rounded bg-primary/10 border border-primary/20">99.8%</span></span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <button onclick="triggerQuickMic()" id="hero-mic-trigger" class="bg-primary/20 hover:bg-primary/30 border border-primary/40 backdrop-blur-md text-primary px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 shadow-[0_0_20px_rgba(173,198,255,0.15)]">
+                    <span class="material-symbols-outlined text-sm">mic</span>
+                    <span class="text-body-sm font-medium font-body-sm">Speak to ANSH</span>
+                  </button>
+                  <button onclick="recalibrateSystem()" class="bg-white/5 hover:bg-white/10 backdrop-blur-md text-on-surface px-5 py-2.5 rounded-full border border-white/10 transition-all duration-300 flex items-center gap-2">
+                    <span class="text-body-sm font-body-sm font-medium">Re-calibrate</span>
+                    <span class="material-symbols-outlined text-sm transition-transform group-hover:rotate-180">sync</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 CYBER ACTION CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-stack-gap mt-3">
+              
+              <!-- Card 1 -->
+              <div onclick="switchNavTab('assistant')" class="glass-card rounded-xl p-5 flex flex-col gap-3 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-lg group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined">play_arrow</span>
+                </div>
+                <div class="flex flex-col gap-0.5 z-10">
+                  <span class="text-lg font-headline-md font-bold text-on-surface">Initialize Session</span>
+                  <span class="text-xs font-body-sm text-on-surface-variant opacity-80">Start new generative workspace.</span>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div onclick="triggerSystemScan()" class="glass-card rounded-xl p-5 flex flex-col gap-3 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-lg group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-secondary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-11 h-11 rounded-full bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined">radar</span>
+                </div>
+                <div class="flex flex-col gap-0.5 z-10">
+                  <span class="text-lg font-headline-md font-bold text-on-surface">System Scan</span>
+                  <span class="text-xs font-body-sm text-on-surface-variant opacity-80">Analyze network & endpoints.</span>
+                </div>
+              </div>
+
+              <!-- Card 3 -->
+              <div onclick="switchNavTab('memory')" class="glass-card rounded-xl p-5 flex flex-col gap-3 hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-lg group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-tertiary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="w-11 h-11 rounded-full bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined">database</span>
+                </div>
+                <div class="flex flex-col gap-0.5 z-10">
+                  <span class="text-lg font-headline-md font-bold text-on-surface">Knowledge Retr</span>
+                  <span class="text-xs font-body-sm text-on-surface-variant opacity-80">Access Markdown archives.</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- RIGHT TELEMETRY / PULSE FEED (4 Cols) -->
+          <div class="lg:col-span-4 flex flex-col mt-8 lg:mt-0">
+            <div class="glass-panel rounded-2xl p-6 h-full min-h-[520px] flex flex-col shadow-xl relative overflow-hidden">
+              <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary rounded-full blur-[60px] opacity-10 pointer-events-none"></div>
+              
+              <!-- Header -->
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-headline-md font-headline-md font-bold text-on-surface flex items-center gap-2 text-lg">
+                  <span class="material-symbols-outlined text-primary text-xl">vital_signs</span> Pulse Feed
+                </h2>
+                <button onclick="clearPulseFeed()" class="text-label-mono font-label-mono text-xs text-on-surface-variant hover:text-primary transition-colors">Clear</button>
+              </div>
+
+              <!-- Pulse Feed Log Stream -->
+              <div class="flex-1 flex flex-col gap-3.5 overflow-y-auto pr-1 relative" id="pulse-feed-container">
+                <div class="absolute left-[7px] top-2 bottom-2 w-[1px] bg-gradient-to-b from-primary/30 via-secondary/10 to-transparent"></div>
+                
+                <!-- Initial Telemetry Items -->
+                <div class="flex gap-3.5 relative z-10 group">
+                  <div class="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center mt-1 shrink-0">
+                    <div class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(173,198,255,0.8)]"></div>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-label-mono font-label-mono text-primary/70 text-[10px]">SYSTEM READY</span>
+                    <p class="text-body-sm font-body-sm text-on-surface text-xs mt-0.5">ANSH Neural Execution Core initialized. Gemini 2.5 Live stream online.</p>
+                  </div>
+                </div>
+
+                <div class="flex gap-3.5 relative z-10 group">
+                  <div class="w-4 h-4 rounded-full bg-secondary/20 flex items-center justify-center mt-1 shrink-0">
+                    <div class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(221,183,255,0.8)]"></div>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-label-mono font-label-mono text-secondary/70 text-[10px]">MEMORY ENGINE</span>
+                    <p class="text-body-sm font-body-sm text-on-surface text-xs mt-0.5">Authoritative Markdown storage mounted at /memory/storage. 24 entries indexed.</p>
+                  </div>
+                </div>
+
+                <div class="flex gap-3.5 relative z-10 group">
+                  <div class="w-4 h-4 rounded-full bg-surface-variant flex items-center justify-center mt-1 shrink-0">
+                    <div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-label-mono font-label-mono text-on-surface-variant text-[10px]">TELEMETRY</span>
+                    <p class="text-body-sm font-body-sm text-on-surface text-xs mt-0.5">Hardware sensors active. Audio latency < 45ms. Native tools online.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Log Query Input Bar -->
+              <div class="mt-4 pt-3 relative">
+                <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent"></div>
+                <div class="w-full relative flex items-center">
+                  <input id="log-query-input" onkeyup="filterPulseLogs(this.value)" class="w-full bg-transparent text-body-sm font-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none py-2 px-1 border-b border-outline-variant/30 focus:border-primary transition-colors text-xs" placeholder="Query logs or send command..." type="text">
+                  <button onclick="sendInlineCommand()" class="text-on-surface-variant hover:text-primary transition-colors p-1">
+                    <span class="material-symbols-outlined text-sm">send</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB: SMART ISLAND COMPONENT STATES                                  -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-island" class="tab-content">
+        <div class="flex flex-col gap-10 max-w-4xl mx-auto py-4">
+          
+          <div class="text-center flex flex-col items-center gap-2">
+            <h1 class="text-display-lg font-display-lg text-on-surface font-bold tracking-tight">Smart Island</h1>
+            <h2 class="text-2xl font-display-lg text-on-surface-variant/80 font-medium">Component States & Interactive Faces</h2>
+            <p class="text-xs font-label-mono text-primary mt-1">DYNAMIC MORPHING DESKTOP COMPANION</p>
+          </div>
+
+          <!-- 01 / STANDBY MODE -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">01 / STANDBY MODE</span>
+            <div onclick="toggleWebIslandMode('spotlight')" class="glass-panel px-6 py-2.5 rounded-full flex items-center gap-4 cursor-pointer hover:border-primary/40 transition-all duration-300 shadow-lg hover:scale-105 group">
+              <div class="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs">◈</div>
+              <span class="text-sm font-bold font-headline-md text-on-surface">Ansh AI</span>
+              <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_#00ff88]"></div>
+              <div class="flex items-center gap-0.5">
+                <div class="w-1 h-3 bg-primary rounded-full animate-bounce"></div>
+                <div class="w-1 h-4 bg-secondary rounded-full animate-bounce delay-75"></div>
+                <div class="w-1 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
+                <div class="w-1 h-3.5 bg-secondary rounded-full animate-bounce delay-100"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 02 / ACTIVE PROCESSING -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">02 / ACTIVE PROCESSING</span>
+            <div class="glass-panel px-6 py-3.5 rounded-full flex items-center gap-4 border border-primary/40 shadow-[0_0_25px_rgba(173,198,255,0.2)] max-w-md w-full">
+              <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shrink-0 text-sm">
+                🧠
+              </div>
+              <div class="flex flex-col flex-1 overflow-hidden">
+                <span class="text-[9px] font-label-mono text-primary font-bold tracking-wider uppercase">SYNTHESIZING REQUEST</span>
+                <span class="text-xs text-on-surface font-body-sm truncate">"Analyzing temporal data patterns..."</span>
+              </div>
+              <div class="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center shrink-0">
+                <div class="w-2 h-2 rounded-full bg-primary animate-ping shadow-[0_0_12px_rgba(173,198,255,1)]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 03 / CRITICAL OVERRIDE -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">03 / CRITICAL OVERRIDE</span>
+            <div class="glass-panel p-6 rounded-3xl flex flex-col gap-4 border border-red-500/30 shadow-[0_0_30px_rgba(255,100,100,0.15)] max-w-lg w-full">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400">
+                    <span class="material-symbols-outlined text-base">shield</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold font-headline-md text-red-400">Intrusion Blocked</span>
+                    <span class="text-[9px] font-label-mono text-red-300/70 font-bold uppercase tracking-wider">NEURAL FIREWALL ACTIVE</span>
+                  </div>
+                </div>
+                <button class="text-on-surface-variant hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+
+              <p class="text-xs text-on-surface leading-relaxed">
+                Unauthorized access attempt detected from IP <code class="px-1.5 py-0.5 rounded bg-black/40 text-primary border border-white/10 font-label-mono">192.168.x.x</code>. Defense protocols engaged.
+              </p>
+
+              <div class="flex items-center gap-3 mt-1">
+                <button onclick="switchNavTab('dashboard')" class="flex-1 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-950/60 text-red-300 border border-red-500/30 text-xs font-semibold transition-all">
+                  View Logs
+                </button>
+                <button onclick="switchNavTab('dashboard')" class="flex-1 py-2.5 rounded-xl bg-[#ff9999] hover:bg-[#ff8888] text-[#2b0000] font-bold text-xs shadow-lg transition-all">
+                  Lockdown
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SPOTLIGHT / COMMAND ISLAND -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">COMMAND ISLAND & TIMELINE</span>
+            <div class="glass-panel p-6 rounded-3xl flex flex-col gap-5 max-w-xl w-full border border-white/10 shadow-2xl">
+              
+              <!-- Input Bar -->
+              <div class="flex items-center gap-3 bg-surface-container-low/70 px-4 py-3 rounded-2xl border border-white/10">
+                <span class="material-symbols-outlined text-on-surface-variant text-base">search</span>
+                <input id="island-demo-input" onkeydown="if(event.key==='Enter') handleIslandDemoInput(this.value)" class="flex-1 bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none" placeholder="Ask Ansh AI or type a command... (type 'dashboard' to open)" type="text">
+                <span class="text-[10px] font-label-mono text-outline bg-white/5 px-2 py-1 rounded border border-white/10">⌘ K</span>
+              </div>
+
+              <!-- Quick Action Chips -->
+              <div class="flex gap-2">
+                <button onclick="handleIslandDemoInput('dashboard')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary transition-all">📊 Dashboard</button>
+                <button onclick="handleIslandDemoInput('Summarize Intel')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary transition-all">📑 Summarize Intel</button>
+                <button onclick="handleIslandDemoInput('Code Review')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary transition-all">💻 Code Review</button>
+                <button onclick="handleIslandDemoInput('Draft Email')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary transition-all">✉️ Draft Email</button>
+              </div>
+
+              <div class="h-[1px] bg-white/5 w-full"></div>
+
+              <!-- Timeline Item 1 -->
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(173,198,255,0.8)]"></div>
+                    <span class="text-sm font-bold font-headline-md text-on-surface">Quantum Supremacy Milestone Achieved</span>
+                  </div>
+                  <span class="text-[10px] font-label-mono text-outline">09:41 AM</span>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed ml-4">
+                  Research teams have confirmed a sustained coherent state for over 400 milliseconds across a 128-qubit array. System implications suggest a 10,000x acceleration in decryption.
+                </p>
+                <div class="ml-4 mt-1 p-3 rounded-xl bg-surface-container-low border border-white/5 flex items-center justify-between">
+                  <span class="text-[10px] font-label-mono text-primary">COMMAND ISLAND // SECURE</span>
+                  <span class="text-[10px] font-label-mono text-green-400">STATUS OPTIMAL</span>
+                </div>
+              </div>
+
+              <!-- Timeline Item 2 -->
+              <div class="flex flex-col gap-2 pt-2 border-t border-white/5">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(221,183,255,0.8)]"></div>
+                    <span class="text-sm font-bold font-headline-md text-on-surface">Neural Pathway Realignment</span>
+                  </div>
+                  <span class="text-[10px] font-label-mono text-outline">08:15 AM</span>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed ml-4">
+                  Scheduled background optimization complete. Redundant data branches have been pruned, resulting in a 14% decrease in latency.
+                </p>
+                <div class="ml-4 mt-1 flex items-center gap-3">
+                  <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div class="h-full bg-secondary rounded-full w-[86%]"></div>
+                  </div>
+                  <span class="text-[10px] font-label-mono text-secondary">86% OPTIMIZED</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- MUSIC / MEDIA PLAYER STATE -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">MUSIC / MEDIA PLAYER STATE</span>
+            <div class="glass-panel p-6 rounded-3xl flex flex-col gap-4 max-w-sm w-full border border-white/10 shadow-xl">
+              
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-label-mono text-primary font-bold tracking-wider">• NOW PLAYING</span>
+                <span class="material-symbols-outlined text-outline text-sm">more_horiz</span>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary/30 to-secondary/30 border border-secondary/40 flex items-center justify-center text-3xl shadow-lg">
+                  🪐
+                </div>
+                <div class="flex flex-col">
+                  <h3 class="text-base font-bold font-headline-md text-on-surface">Quantum Harmonics</h3>
+                  <span class="text-xs text-on-surface-variant">Ansh Core</span>
+                  <div class="flex items-center gap-1 mt-2">
+                    <div class="w-1 h-2 bg-primary rounded-full animate-bounce"></div>
+                    <div class="w-1 h-3.5 bg-secondary rounded-full animate-bounce delay-75"></div>
+                    <div class="w-1 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-[10px] font-label-mono text-outline">01:24</span>
+                <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-primary to-secondary rounded-full w-[45%]"></div>
+                </div>
+                <span class="text-[10px] font-label-mono text-outline">03:42</span>
+              </div>
+
+              <!-- Media Controls -->
+              <div class="flex items-center justify-center gap-6 mt-1">
+                <button class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-on-surface flex items-center justify-center text-xs">⏮</button>
+                <button class="w-12 h-12 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/40 text-primary flex items-center justify-center text-base shadow-[0_0_15px_rgba(173,198,255,0.3)]">▶</button>
+                <button class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-on-surface flex items-center justify-center text-xs">⏭</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- INTELLIGENCE BRIEFING & NEWS READER -->
+          <div class="flex flex-col items-center gap-3">
+            <span class="text-[11px] font-label-mono text-outline tracking-widest uppercase">INTELLIGENCE BRIEFING READER</span>
+            <div class="glass-panel p-8 rounded-3xl flex flex-col gap-4 max-w-xl w-full border border-white/10 shadow-2xl">
+              
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-label-mono px-2.5 py-1 rounded bg-secondary/15 text-secondary border border-secondary/30 font-bold">INTELLIGENCE_BRIEF • LIVE SYNC</span>
+                <span class="text-[10px] font-label-mono text-outline">08:42 UTC</span>
+              </div>
+
+              <h2 class="text-2xl font-bold font-headline-md text-on-surface leading-snug">Quantum Supremacy Claimed in Simulation Architecture</h2>
+              <p class="text-xs text-on-surface-variant font-medium leading-relaxed">
+                A breakthrough in topological qubit error correction suggests near-term viability for complex meteorological modeling at global scale.
+              </p>
+
+              <p class="text-xs text-on-surface leading-relaxed">
+                Research facilities operating out of the Geneva Nexus have published a peer-reviewed paper detailing a novel approach to error correction in topological qubits. The methodology leverages a 4D torus structure, effectively trapping anyons in a lattice that actively repairs state decoherence in real-time.
+              </p>
+
+              <!-- Metrics Grid -->
+              <div class="grid grid-cols-3 gap-3 p-3 rounded-2xl bg-surface-container-low border border-white/5">
+                <div class="flex flex-col">
+                  <span class="text-[9px] font-label-mono text-outline">FIDELITY RATE</span>
+                  <span class="text-sm font-bold font-label-mono text-primary">99.998%</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-[9px] font-label-mono text-outline">QUBIT COUNT</span>
+                  <span class="text-sm font-bold font-label-mono text-secondary">4,096 Logical</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-[9px] font-label-mono text-outline">DECOHERENCE</span>
+                  <span class="text-sm font-bold font-label-mono text-green-400">&lt;0.1ms</span>
+                </div>
+              </div>
+
+              <blockquote class="p-3 rounded-xl bg-secondary/5 border-l-2 border-secondary text-xs italic text-secondary/90 leading-relaxed">
+                "We are moving from a paradigm of calculating weather to effectively rendering it, pixel by pixel, across the entire atmosphere."
+                <div class="text-[10px] font-label-mono text-outline not-italic mt-1">— Dr. Aris Thorne, Lead Architect</div>
+              </blockquote>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: ASSISTANT & CHAT                                             -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-assistant" class="tab-content">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+          <div class="lg:col-span-8 flex flex-col gap-4">
+            <div class="glass-panel rounded-2xl p-6 flex flex-col h-[600px] shadow-2xl">
+              <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
+                  <h2 class="text-lg font-headline-md font-bold text-on-surface">Live Voice & Text Assistant</h2>
+                </div>
+                <span class="text-xs font-label-mono text-primary">Gemini 2.5 Native Audio</span>
+              </div>
+
+              <!-- Chat messages feed -->
+              <div id="chat-feed-box" class="flex-1 overflow-y-auto py-4 flex flex-col gap-3 pr-2">
+                <div class="self-start max-w-[85%] bg-primary/10 border border-primary/20 rounded-2xl rounded-bl-sm p-4">
+                  <div class="text-[10px] font-label-mono text-primary font-bold mb-1">ANSH AI</div>
+                  <p class="text-sm text-on-surface">Hello sir. I am online with full system control, screen OCR, generative document tools, and persistent Markdown memory ready. How may I assist you today?</p>
+                </div>
+              </div>
+
+              <!-- Quick Action Chips -->
+              <div class="flex gap-2 py-2 overflow-x-auto border-t border-white/5">
+                <button onclick="sendQuickPrompt('Generate a 5-slide presentation on Artificial Intelligence trends')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary whitespace-nowrap transition-all">📊 Generate PPT</button>
+                <button onclick="sendQuickPrompt('What tech stack do I use for school websites?')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary whitespace-nowrap transition-all">🧠 Query Memory</button>
+                <button onclick="sendQuickPrompt('Set my wallpaper to a cyberpunk neon city')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary whitespace-nowrap transition-all">🎨 AI Wallpaper</button>
+                <button onclick="sendQuickPrompt('Organize my downloads folder')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary whitespace-nowrap transition-all">📂 Organize Files</button>
+                <button onclick="sendQuickPrompt('Deploy wormhole on port 8000')" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-on-surface-variant hover:text-primary whitespace-nowrap transition-all">🌐 Deploy Wormhole</button>
+              </div>
+
+              <!-- Chat Input Bar -->
+              <div class="flex items-center gap-3 pt-3 border-t border-white/10">
+                <input id="assistant-input" onkeydown="if(event.key==='Enter') sendAssistantMessage()" class="flex-1 bg-surface-container-low px-4 py-3 rounded-xl border border-white/10 focus:border-primary text-sm text-on-surface focus:outline-none transition-all placeholder:text-on-surface-variant/40" placeholder="Type a message or instruction for ANSH..." type="text">
+                <button onclick="triggerQuickMic()" id="chat-mic-btn" class="w-12 h-12 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 flex items-center justify-center text-primary transition-all">
+                  <span class="material-symbols-outlined">mic</span>
+                </button>
+                <button onclick="sendAssistantMessage()" class="px-5 py-3 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(173,198,255,0.3)]">
+                  <span>Send</span>
+                  <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT ASSISTANT CAPABILITIES -->
+          <div class="lg:col-span-4 flex flex-col gap-4">
+            <div class="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+              <h3 class="text-base font-headline-md font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">psychology</span> Active Capabilities
+              </h3>
+              <div class="flex flex-col gap-2.5 text-xs">
+                <div class="p-3 rounded-xl bg-surface-container-low border border-white/5 flex items-center justify-between">
+                  <span class="text-on-surface">ScreenPeeler Multimodal OCR</span>
+                  <span class="text-primary font-label-mono">Ctrl+Alt+X</span>
+                </div>
+                <div class="p-3 rounded-xl bg-surface-container-low border border-white/5 flex items-center justify-between">
+                  <span class="text-on-surface">Phantom Typer / Ghost Inject</span>
+                  <span class="text-primary font-label-mono">Ctrl+Alt+Space</span>
+                </div>
+                <div class="p-3 rounded-xl bg-surface-container-low border border-white/5 flex items-center justify-between">
+                  <span class="text-on-surface">Instant Speech Interrupt</span>
+                  <span class="text-primary font-label-mono">Escape (&lt;50ms)</span>
+                </div>
+                <div class="p-3 rounded-xl bg-surface-container-low border border-white/5 flex items-center justify-between">
+                  <span class="text-on-surface">Microphone Mute/Toggle</span>
+                  <span class="text-primary font-label-mono">F4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: LONG-TERM MEMORY EXPLORER                                    -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-memory" class="tab-content">
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 class="text-display-lg-mobile font-display-lg text-on-surface font-bold">Persistent Memory Storage</h2>
+              <p class="text-sm text-on-surface-variant font-body-sm mt-1">Human-readable authoritative Markdown storage with semantic retrieval and conflict protection.</p>
+            </div>
+            <button onclick="openAddMemoryModal()" class="px-5 py-2.5 rounded-full bg-primary text-on-primary font-semibold text-xs flex items-center gap-2 shadow-lg hover:opacity-90 transition-all">
+              <span class="material-symbols-outlined text-sm">add</span> Add Memory
+            </button>
+          </div>
+
+          <!-- Memory Search Bar -->
+          <div class="glass-panel p-4 rounded-2xl flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">search</span>
+            <input id="memory-search-input" oninput="searchMemoryFromUI(this.value)" class="w-full bg-transparent text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none" placeholder="Search across all Markdown memories (e.g. 'tech stack', 'school project', 'preferences')..." type="text">
+          </div>
+
+          <!-- Memory Grid of Cards -->
+          <div id="memory-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            <!-- Dynamic entries loaded via JS -->
+            <div class="glass-card p-5 rounded-2xl flex items-center justify-center text-xs text-on-surface-variant">
+              Loading Markdown memories...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 4: KNOWLEDGE & PROCEDURES                                       -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-knowledge" class="tab-content">
+        <div class="flex flex-col gap-6">
+          <div>
+            <h2 class="text-display-lg-mobile font-display-lg text-on-surface font-bold">Knowledge & Learned Skills</h2>
+            <p class="text-sm text-on-surface-variant font-body-sm mt-1">Concepts, rules, syntax, and custom workflows taught directly by the user.</p>
+          </div>
+          <div id="knowledge-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+            <!-- Loaded dynamically from memory/storage/knowledge.md -->
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 5: PROJECTS TRACKER                                             -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-projects" class="tab-content">
+        <div class="flex flex-col gap-6">
+          <div>
+            <h2 class="text-display-lg-mobile font-display-lg text-on-surface font-bold">Active Projects & Architecture</h2>
+            <p class="text-sm text-on-surface-variant font-body-sm mt-1">Durable records of applications, websites, backend stacks, and modules being developed.</p>
+          </div>
+          <div id="projects-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            <!-- Loaded dynamically from memory/storage/projects.md -->
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 6: SECURITY MATRIX                                              -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-security" class="tab-content">
+        <div class="flex flex-col gap-6">
+          <div>
+            <h2 class="text-display-lg-mobile font-display-lg text-on-surface font-bold">Security & System Posture</h2>
+            <p class="text-sm text-on-surface-variant font-body-sm mt-1">Multi-layer protection, memory injection isolation, and execution sandbox status.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+            <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-label-mono text-primary">MEMORY INJECTION GUARD</span>
+                <span class="material-symbols-outlined text-green-400 text-sm">verified_user</span>
+              </div>
+              <span class="text-lg font-bold text-on-surface">Active (100%)</span>
+              <p class="text-xs text-on-surface-variant">Strict delimiter separation prevents memory overrides of AI system prompt.</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-label-mono text-primary">PATH TRAVERSAL DEFENSE</span>
+                <span class="material-symbols-outlined text-green-400 text-sm">lock</span>
+              </div>
+              <span class="text-lg font-bold text-on-surface">Enforced</span>
+              <p class="text-xs text-on-surface-variant">All memory reads/writes constrained strictly to /memory/storage root.</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-label-mono text-primary">ATOMIC FILE WRITES</span>
+                <span class="material-symbols-outlined text-green-400 text-sm">sync_saved_locally</span>
+              </div>
+              <span class="text-lg font-bold text-on-surface">Zero Data Loss</span>
+              <p class="text-xs text-on-surface-variant">Temporary file writes with atomic OS replace guarantees non-corrupt storage.</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-label-mono text-primary">OFFLINE-FIRST STORE</span>
+                <span class="material-symbols-outlined text-green-400 text-sm">offline_bolt</span>
+              </div>
+              <span class="text-lg font-bold text-on-surface">Operational</span>
+              <p class="text-xs text-on-surface-variant">Fully functional on pure Markdown storage even when disconnected.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 7: SYSTEM TELEMETRY & SCREEN STREAM                             -->
+      <!-- =================================================================== -->
+      <div id="tab-pane-system" class="tab-content">
+        <div class="flex flex-col gap-6">
+          <div>
+            <h2 class="text-display-lg-mobile font-display-lg text-on-surface font-bold">System Telemetry & Hardware Control</h2>
+            <p class="text-sm text-on-surface-variant font-body-sm mt-1">Real-time CPU, RAM, Disk, Process Manager, and Remote Screen Controller.</p>
+          </div>
+
+          <!-- Gauges -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-gutter">
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-1">
+              <span class="text-xs font-label-mono text-on-surface-variant">CPU UTILIZATION</span>
+              <span id="tel-cpu-val" class="text-2xl font-bold font-headline-md text-primary">--%</span>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-1">
+              <span class="text-xs font-label-mono text-on-surface-variant">RAM USAGE</span>
+              <span id="tel-ram-val" class="text-2xl font-bold font-headline-md text-secondary">--%</span>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-1">
+              <span class="text-xs font-label-mono text-on-surface-variant">STORAGE DISK</span>
+              <span id="tel-disk-val" class="text-2xl font-bold font-headline-md text-tertiary">--%</span>
+            </div>
+            <div class="glass-panel p-5 rounded-2xl flex flex-col gap-1">
+              <span class="text-xs font-label-mono text-on-surface-variant">BATTERY STATE</span>
+              <span id="tel-bat-val" class="text-2xl font-bold font-headline-md text-green-400">--%</span>
+            </div>
+          </div>
+
+          <!-- Live Screen Stream & Trackpad -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+            <div class="lg:col-span-8 glass-panel p-4 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm font-bold text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-sm">desktop_windows</span> Live Remote Screen
+                </span>
+                <div class="flex gap-2">
+                  <button onclick="startScreenStream()" class="px-3 py-1 bg-primary/20 hover:bg-primary/30 text-primary text-xs rounded-lg border border-primary/30">Start Stream</button>
+                  <button onclick="stopScreenStream()" class="px-3 py-1 bg-white/5 hover:bg-white/10 text-on-surface-variant text-xs rounded-lg border border-white/10">Stop</button>
+                </div>
+              </div>
+              <div class="w-full h-80 bg-black rounded-xl border border-white/10 overflow-hidden flex items-center justify-center relative">
+                <img id="live-screen-img" onclick="handleScreenClick(event)" class="w-full h-full object-contain cursor-crosshair" alt="Live screen stream">
+              </div>
+            </div>
+
+            <!-- Process Manager -->
+            <div class="lg:col-span-4 glass-panel p-4 rounded-2xl flex flex-col gap-3">
+              <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                <span class="text-sm font-bold text-on-surface">Top Processes</span>
+                <button onclick="loadTelemetry()" class="text-xs text-primary font-label-mono hover:underline">Refresh</button>
+              </div>
+              <div id="process-list-container" class="flex flex-col gap-2 overflow-y-auto max-h-72">
+                <!-- Process items -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full py-6 bg-surface-container-lowest border-t border-outline-variant/10 mt-auto">
+    <div class="max-w-7xl mx-auto px-container-padding flex flex-col md:flex-row justify-between items-center gap-stack-gap">
+      <div class="flex items-center gap-3 opacity-60">
+        <div class="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center text-primary text-xs">A</div>
+        <span class="text-label-mono font-label-mono uppercase tracking-widest text-xs">Ansh OS v4.2.0</span>
+      </div>
+      <p class="text-body-sm font-body-sm text-on-surface-variant opacity-40 italic text-xs">© 2026 Neural Systems Architecture. All parameters secured.</p>
+      <div class="flex gap-4">
+        <span onclick="switchNavTab('assistant')" class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer text-lg">terminal</span>
+        <span onclick="switchNavTab('system')" class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer text-lg">settings_input_antenna</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    let token = sessionStorage.getItem('ansh_token') || '';
+    let ws = null;
+    let currentNavTab = 'dashboard';
+    let isMicActive = false;
+
+    function switchNavTab(tabId) {
+      currentNavTab = tabId;
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        const id = btn.id.replace('nav-', '');
+        if (id === tabId) {
+          btn.className = "nav-tab-btn px-4 py-2 font-label-mono text-xs rounded-full transition-all bg-primary/20 text-primary border border-primary/30 font-semibold shadow-sm";
+        } else {
+          btn.className = "nav-tab-btn px-4 py-2 font-label-mono text-xs text-on-surface-variant hover:text-on-surface rounded-full transition-all";
+        }
+      });
+
+      document.querySelectorAll('.tab-content').forEach(pane => pane.classList.remove('active'));
+      const activePane = document.getElementById(`tab-pane-${tabId}`);
+      if (activePane) activePane.classList.add('active');
+
+      if (tabId === 'memory') loadMemoryOverview();
+      if (tabId === 'knowledge') loadKnowledgeTab();
+      if (tabId === 'projects') loadProjectsTab();
+      if (tabId === 'system') {
+        loadTelemetry();
+        startScreenStream();
+      } else {
+        stopScreenStream();
+      }
+    }
+
+    // ── WAVEFORM ANIMATION ──
+    const canvas = document.getElementById('hero-waveform');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let animationFrameId = null;
+
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let waveStep = 0;
+    function renderWaveform() {
+      if (!ctx || !canvas) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+      
+      waveStep += 0.04;
+      const waveCount = 3;
+      const colors = ['rgba(173, 198, 255, 0.4)', 'rgba(221, 183, 255, 0.25)', 'rgba(173, 198, 255, 0.15)'];
+
+      for (let i = 0; i < waveCount; i++) {
+        ctx.beginPath();
+        ctx.strokeStyle = colors[i];
+        ctx.lineWidth = 2.5 - i * 0.6;
+
+        for (let x = 0; x < width; x += 4) {
+          const freq = 0.008 + i * 0.003;
+          const amp = (isMicActive ? 75 : 28) + Math.sin(waveStep + i) * 12;
+          const y = centerY + Math.sin(x * freq + waveStep * (1 + i * 0.5)) * Math.cos(x * 0.002) * amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      animationFrameId = requestAnimationFrame(renderWaveform);
+    }
+    renderWaveform();
+
+    // ── WEBSOCKET CONNECTION ──
+    function connectWS() {
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}/ws?token=${encodeURIComponent(token)}`);
+
+      ws.onopen = () => {
+        document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_12px_rgba(173,198,255,0.8)]";
+        document.getElementById('status-label').innerText = "Live Sync";
+        addPulseItem("NETWORK", "WebSocket connection established with ANSH Live Core.");
+      };
+
+      ws.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (data.type === 'response' || data.type === 'chat' || data.type === 'sys') {
+            appendChatMessage('ANSH AI', data.text || data.content);
+            addPulseItem("ANSH RESPONSE", (data.text || data.content).slice(0, 100) + "...");
+          } else if (data.type === 'log') {
+            addPulseItem("CORE LOG", data.text);
+          }
+        } catch(e){}
+      };
+
+      ws.onclose = () => {
+        document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-red-400";
+        document.getElementById('status-label').innerText = "Disconnected";
+        setTimeout(connectWS, 3000);
+      };
+    }
+
+    function addPulseItem(tag, text) {
+      const feed = document.getElementById('pulse-feed-container');
+      if (!feed) return;
+      const item = document.createElement('div');
+      item.className = "flex gap-3.5 relative z-10 group";
+      item.innerHTML = `
+        <div class="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center mt-1 shrink-0">
+          <div class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(173,198,255,0.8)]"></div>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-label-mono font-label-mono text-primary/70 text-[10px]">${tag}</span>
+          <p class="text-body-sm font-body-sm text-on-surface text-xs mt-0.5">${text}</p>
+        </div>
+      `;
+      feed.insertBefore(item, feed.children[1] || null);
+    }
+
+    function clearPulseFeed() {
+      const feed = document.getElementById('pulse-feed-container');
+      if (feed) feed.innerHTML = '<div class="absolute left-[7px] top-2 bottom-2 w-[1px] bg-gradient-to-b from-primary/30 via-secondary/10 to-transparent"></div>';
+    }
+
+    function filterPulseLogs(val) {
+      const items = document.querySelectorAll('#pulse-feed-container > div.group');
+      const q = val.toLowerCase().trim();
+      items.forEach(it => {
+        it.style.display = it.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    // ── CHAT FUNCTIONS ──
+    function appendChatMessage(sender, text) {
+      const feed = document.getElementById('chat-feed-box');
+      if (!feed || !text) return;
+      const isUser = sender === 'YOU';
+      const div = document.createElement('div');
+      div.className = `self-${isUser ? 'end' : 'start'} max-w-[85%] ${isUser ? 'bg-surface-container border border-white/10' : 'bg-primary/10 border border-primary/20'} rounded-2xl ${isUser ? 'rounded-br-sm' : 'rounded-bl-sm'} p-4`;
+      div.innerHTML = `
+        <div class="text-[10px] font-label-mono ${isUser ? 'text-on-surface-variant' : 'text-primary'} font-bold mb-1">${sender}</div>
+        <p class="text-sm text-on-surface">${text}</p>
+      `;
+      feed.appendChild(div);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    async function sendAssistantMessage() {
+      const inp = document.getElementById('assistant-input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      appendChatMessage('YOU', txt);
+      inp.value = '';
+      addPulseItem("USER COMMAND", txt);
+
+      await fetch('/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ text: txt })
+      });
+    }
+
+    function sendQuickPrompt(promptText) {
+      switchNavTab('assistant');
+      document.getElementById('assistant-input').value = promptText;
+      sendAssistantMessage();
+    }
+
+    function handleIslandDemoInput(val) {
+      const q = (val || '').trim();
+      if (!q) return;
+      
+      const qLower = q.toLowerCase();
+      if (qLower === 'dashboard' || qLower === 'open dashboard' || qLower === 'mission control' || qLower === 'ui' || qLower === 'panel') {
+        switchNavTab('dashboard');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        addPulseItem("SMART ISLAND", "Navigated to Mission Control Dashboard via command input.");
+        return;
+      }
+      
+      // If other command, forward to assistant
+      sendQuickPrompt(q);
+    }
+
+    function toggleWebIslandMode(mode) {
+      if (mode === 'spotlight') {
+        const inp = document.getElementById('island-demo-input');
+        if (inp) {
+          inp.focus();
+          inp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    function sendInlineCommand() {
+      const inp = document.getElementById('log-query-input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      sendQuickPrompt(txt);
+    }
+
+    function triggerQuickMic() {
+      isMicActive = !isMicActive;
+      const micBtn = document.getElementById('hdr-mic-btn');
+      const heroMic = document.getElementById('hero-mic-trigger');
+      if (isMicActive) {
+        if (micBtn) micBtn.classList.add('text-red-400', 'border-red-400', 'mic-pulsing');
+        if (heroMic) heroMic.classList.add('border-red-400', 'text-red-400');
+        fetch('/api/wake', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        addPulseItem("VOICE MIC", "Microphone listening stream active...");
+      } else {
+        if (micBtn) micBtn.classList.remove('text-red-400', 'border-red-400', 'mic-pulsing');
+        if (heroMic) heroMic.classList.remove('border-red-400', 'text-red-400');
+      }
+    }
+
+    function recalibrateSystem() {
+      addPulseItem("RE-CALIBRATE", "Re-balancing neural weights and refreshing audio pipeline...");
+      fetch('/api/wake', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+    }
+
+    function triggerSystemScan() {
+      addPulseItem("SYSTEM SCAN", "Probing hardware, network latency, and memory stores...");
+      switchNavTab('system');
+    }
+
+    // ── MEMORY EXPLORER ──
+    async function loadMemoryOverview() {
+      try {
+        const res = await fetch('/api/memory/search?q=', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const grid = document.getElementById('memory-cards-grid');
+        grid.innerHTML = '';
+        if (data.ok && data.results) {
+          data.results.forEach(m => {
+            const card = document.createElement('div');
+            card.className = "glass-card p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-primary/40 transition-all";
+            card.innerHTML = `
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-label-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">${m.category.toUpperCase()}</span>
+                  <span class="text-[10px] font-label-mono text-on-surface-variant">${m.importance}</span>
+                </div>
+                <h3 class="text-base font-bold font-headline-md text-on-surface mt-1">${m.topic}</h3>
+                <p class="text-xs text-on-surface-variant font-body-sm leading-relaxed">${m.content}</p>
+                ${m.notes ? `<div class="text-[10px] font-label-mono text-secondary/80 bg-secondary/5 p-2 rounded-lg mt-1">History: ${m.notes}</div>` : ''}
+              </div>
+              <div class="text-[10px] font-label-mono text-outline/60 pt-2 border-t border-white/5 flex justify-between">
+                <span>Status: ${m.status}</span>
+                <span>Updated: ${m.updated}</span>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+      } catch(e){}
+    }
+
+    async function searchMemoryFromUI(query) {
+      try {
+        const res = await fetch(`/api/memory/search?q=${encodeURIComponent(query)}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const grid = document.getElementById('memory-cards-grid');
+        grid.innerHTML = '';
+        if (data.ok && data.results && data.results.length) {
+          data.results.forEach(m => {
+            const card = document.createElement('div');
+            card.className = "glass-card p-5 rounded-2xl flex flex-col justify-between gap-3 hover:border-primary/40 transition-all";
+            card.innerHTML = `
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-label-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">${m.category.toUpperCase()}</span>
+                  <span class="text-[10px] font-label-mono text-on-surface-variant">Score: ${m.score}</span>
+                </div>
+                <h3 class="text-base font-bold font-headline-md text-on-surface mt-1">${m.topic}</h3>
+                <p class="text-xs text-on-surface-variant font-body-sm leading-relaxed">${m.content}</p>
+              </div>
+              <div class="text-[10px] font-label-mono text-outline/60 pt-2 border-t border-white/5 flex justify-between">
+                <span>Status: ${m.status}</span>
+                <span>Updated: ${m.updated}</span>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        } else {
+          grid.innerHTML = '<div class="col-span-full py-12 text-center text-xs text-on-surface-variant">No matching Markdown memory records found.</div>';
+        }
+      } catch(e){}
+    }
+
+    async function loadKnowledgeTab() {
+      try {
+        const res = await fetch('/api/memory/search?q=&category=knowledge', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const cont = document.getElementById('knowledge-list-container');
+        cont.innerHTML = '';
+        if (data.ok && data.results && data.results.length) {
+          data.results.forEach(k => {
+            const el = document.createElement('div');
+            el.className = "glass-panel p-6 rounded-2xl flex flex-col gap-2";
+            el.innerHTML = `
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-on-surface">${k.topic}</h3>
+                <span class="text-xs font-label-mono text-primary">${k.importance}</span>
+              </div>
+              <p class="text-xs text-on-surface-variant leading-relaxed font-body-sm">${k.content}</p>
+            `;
+            cont.appendChild(el);
+          });
+        } else {
+          cont.innerHTML = '<div class="p-6 glass-card rounded-2xl text-xs text-on-surface-variant">No custom knowledge items currently recorded. You can teach ANSH anytime!</div>';
+        }
+      } catch(e){}
+    }
+
+    async function loadProjectsTab() {
+      try {
+        const res = await fetch('/api/memory/search?q=&category=projects', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const grid = document.getElementById('projects-grid-container');
+        grid.innerHTML = '';
+        if (data.ok && data.results) {
+          data.results.forEach(p => {
+            const card = document.createElement('div');
+            card.className = "glass-panel p-6 rounded-2xl flex flex-col justify-between gap-3";
+            card.innerHTML = `
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-label-mono text-secondary px-2 py-0.5 rounded bg-secondary/10 border border-secondary/20">PROJECT</span>
+                  <span class="text-xs font-label-mono text-on-surface-variant">${p.updated}</span>
+                </div>
+                <h3 class="text-base font-bold text-on-surface">${p.topic}</h3>
+                <p class="text-xs text-on-surface-variant leading-relaxed">${p.content}</p>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+      } catch(e){}
+    }
+
+    // ── TELEMETRY & SYSTEM ──
+    async function loadTelemetry() {
+      try {
+        const res = await fetch('/api/telemetry', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('tel-cpu-val').innerText = `${Math.round(data.cpu_percent)}%`;
+          document.getElementById('tel-ram-val').innerText = `${Math.round(data.ram_percent)}%`;
+          document.getElementById('tel-disk-val').innerText = `${Math.round(data.disk_percent)}%`;
+          document.getElementById('tel-bat-val').innerText = `${data.battery_percent}%`;
+          document.getElementById('hero-core-usage').innerText = `Core Usage: ${Math.round(data.cpu_percent)}%`;
+
+          const pcont = document.getElementById('process-list-container');
+          pcont.innerHTML = '';
+          (data.processes || []).forEach(p => {
+            const row = document.createElement('div');
+            row.className = "flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-white/5 text-xs";
+            row.innerHTML = `
+              <div class="flex flex-col">
+                <span class="font-bold text-on-surface">${p.name}</span>
+                <span class="text-[10px] text-outline">PID: ${p.pid}</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-label-mono text-primary text-[11px]">${p.cpu}% CPU</span>
+                <button onclick="killProcess(${p.pid})" class="text-[10px] px-2 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30">Kill</button>
+              </div>
+            `;
+            pcont.appendChild(row);
+          });
+        }
+      } catch(e){}
+    }
+
+    async function killProcess(pid) {
+      if (!confirm(`Kill PID ${pid}?`)) return;
+      await fetch('/api/process/kill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ pid })
+      });
+      loadTelemetry();
+    }
+
+    // ── LIVE SCREEN STREAM ──
+    function startScreenStream() {
+      const img = document.getElementById('live-screen-img');
+      if (img) img.src = `/api/screen/stream?token=${encodeURIComponent(token)}&fps=15&quality=55&t=${Date.now()}`;
+    }
+    function stopScreenStream() {
+      const img = document.getElementById('live-screen-img');
+      if (img) img.src = '';
+    }
+    function handleScreenClick(e) {
+      const img = document.getElementById('live-screen-img');
+      const rect = img.getBoundingClientRect();
+      const x_pct = (e.clientX - rect.left) / rect.width;
+      const y_pct = (e.clientY - rect.top) / rect.height;
+      fetch('/api/remote/mouse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action: 'click', data: { button: 'left', x_pct, y_pct } })
+      });
+    }
+
+    // Initialize
+    connectWS();
+  </script>
+</body>
+</html>
