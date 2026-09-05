@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Build and Release
+build/
+dist/
+*.spec
+AnshAI_Release/
+*.exe
+
+# Product Activation Keys (DO NOT UPLOAD TO GITHUB)
+keys/
+
+# Local User Secrets & Temporary Data
+scratch/
+config/license.json
+config/api_keys.json
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Files
+.DS_Store
+Thumbs.db
