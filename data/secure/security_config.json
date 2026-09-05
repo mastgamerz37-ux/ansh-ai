@@ -1,0 +1,4 @@
+{
+    "algo": "argon2id",
+    "password_hash": "$argon2id$v=19$m=65536,t=3,p=4$UUaGMK0uflx0T9ben4n4qg$tdJ60873phAwtAwXZqyNlieTI0yHHzWdSkkWEpavyhk"
+}
