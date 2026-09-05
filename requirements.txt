@@ -1,0 +1,52 @@
+# Core UI & Voice Streaming
+PyQt6
+sounddevice
+keyboard
+SpeechRecognition
+
+# Gemini & Groq AI SDKs
+google-genai
+google-generativeai
+groq
+
+# Screen Capture, Vision & Automation
+pillow
+opencv-python
+numpy
+mss
+pyautogui
+pyperclip
+pygetwindow
+
+# Web Search & Browser Automation
+requests
+beautifulsoup4
+ddgs
+playwright
+
+# Localhost Dashboard & Cross-Device Server
+fastapi
+uvicorn[standard]
+cryptography
+python-multipart
+qrcode[pil]
+
+# Hardware Monitoring & System Control
+psutil
+pynvml
+send2trash
+
+# Document & Media Processors
+youtube-transcript-api
+python-pptx
+python-docx
+pypdf
+openpyxl
+
+# Windows Platform-Specific Dependencies
+comtypes; sys_platform == "win32"
+pycaw; sys_platform == "win32"
+win10toast; sys_platform == "win32"
+pywinauto; sys_platform == "win32"
+pywin32; sys_platform == "win32"
+wmi; sys_platform == "win32"
