@@ -1,0 +1,11 @@
+{
+  "venvPath": ".",
+  "venv": "venv",
+  "extraPaths": [
+    ".",
+    "./venv/Lib/site-packages"
+  ],
+  "reportMissingImports": "warning",
+  "pythonVersion": "3.13",
+  "pythonPlatform": "Windows"
+}
