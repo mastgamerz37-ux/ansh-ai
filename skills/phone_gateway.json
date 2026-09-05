@@ -1,0 +1,8 @@
+{
+  "id": "phone_gateway",
+  "name": "Cross-Device Android Gateway",
+  "description": "Bridges smartphones with Ansh for battery monitoring, notifications, Find-My-Phone loud alarms, and Android action intents.",
+  "category": "cross-device",
+  "author": "Ansh Core",
+  "version": "1.0.0"
+}
