@@ -1,0 +1,14 @@
+{
+  "id": "screen_remote",
+  "name": "Live Screen Streaming & Remote Control",
+  "description": "Provides low-latency display streaming and processes remote mouse gestures, touch input, and keyboard shortcuts.",
+  "category": "system",
+  "author": "Ansh Core",
+  "version": "1.0.0",
+  "capabilities": [
+    "MJPEG live video stream",
+    "Absolute & relative touch cursor navigation",
+    "Virtual mouse clicks and drag operations",
+    "System power management (Lock, Sleep, Restart, Shutdown)"
+  ]
+}
