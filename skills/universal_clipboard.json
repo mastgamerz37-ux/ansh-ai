@@ -1,0 +1,8 @@
+{
+  "id": "universal_clipboard",
+  "name": "Universal 2-Way Clipboard Sync",
+  "description": "Real-time bi-directional clipboard synchronization between laptop and remote devices over WebSockets and HTTP.",
+  "category": "productivity",
+  "author": "Ansh Core",
+  "version": "1.0.0"
+}
