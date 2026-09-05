@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ansh AI — Dynamic Desktop Smart Island</title>
+  
+  <!-- Premium Google Fonts: Inter (UI), Playfair Display (Editorial Headlines), JetBrains Mono (Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --bg-gradient: radial-gradient(circle at 50% 15%, #161a26 0%, #0b0c10 70%);
+      --surface: rgba(20, 21, 26, 0.78);
+      --surface-card: rgba(28, 30, 38, 0.65);
+      --surface-light: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-glow-blue: rgba(125, 211, 252, 0.45);
+      --border-glow-red: rgba(239, 68, 68, 0.55);
+      --border-glow-purple: rgba(192, 132, 252, 0.45);
+      --border-glow-green: rgba(52, 211, 153, 0.45);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --blue: #38bdf8;
+      --cyan: #7dd3fc;
+      --purple: #c084fc;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #ef4444;
+      --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      color: var(--text);
+      font-family: var(--font-ui);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    /* Ambient Film Grain & Atmospheric Radial Light */
+    .ambient-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-radial-glow {
+      position: absolute;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(192, 132, 252, 0.03) 45%, transparent 70%);
+      filter: blur(60px);
+      transition: background 0.8s ease;
+    }
+
+    /* Floating Island Viewport Container */
+    .island-viewport {
+      position: relative;
+      margin-top: 8px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Core Morphing Smart Island Capsule */
+    .smart-island {
+      position: relative;
+      background: var(--surface);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      overflow: hidden;
+      transition: width 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-radius 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.55s ease,
+                  box-shadow 0.55s ease;
+      cursor: default;
+    }
+
+    .smart-island:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Island State Glow Variants */
+    .smart-island[data-glow="active"] {
+      border-color: var(--border-glow-blue);
+      box-shadow: 0 20px 60px rgba(56, 189, 248, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .smart-island[data-glow="alert"] {
+      border-color: var(--border-glow-red);
+      box-shadow: 0 20px 60px rgba(239, 68, 68, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .smart-island[data-glow="music"] {
+      border-color: var(--border-glow-purple);
+      box-shadow: 0 20px 60px rgba(192, 132, 252, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .smart-island[data-glow="success"] {
+      border-color: var(--border-glow-green);
+      box-shadow: 0 20px 60px rgba(52, 211, 153, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Internal View Containers Stack */
+    .island-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 12px 16px;
+      opacity: 0;
+      transform: scale(0.96);
+      pointer-events: none;
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .island-view.active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    /* ==========================================================================
+       STATE 1: STANDBY MODE
+       ========================================================================== */
+    .view-standby {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ansh-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0e7490, #38bdf8);
+      border: 1px solid rgba(125, 211, 252, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      font-family: 'Sora', var(--font-ui);
+    }
+
+    .status-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulseGreen 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .equalizer-wave {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 14px;
+    }
+
+    .eq-bar {
+      width: 2.5px;
+      background: var(--cyan);
+      border-radius: 1px;
+      animation: waveBar 1.2s infinite ease-in-out;
+    }
+
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; background: var(--purple); }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; background: var(--cyan); }
+    .eq-bar:nth-child(4) { animation-delay: 0.6s; background: var(--purple); }
+
+    @keyframes waveBar {
+      0%, 100% { height: 4px; }
+      50% { height: 12px; }
+    }
+
+    /* ==========================================================================
+       STATE 2: ACTIVE PROCESSING
+       ========================================================================== */
+    .view-processing {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .ai-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3b82f6, #0f172a);
+      border: 1px solid var(--border-glow-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+    }
+
+    .processing-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .uppercase-tag {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+      color: var(--cyan);
+    }
+
+    .processing-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .glowing-orb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 0%, #38bdf8 40%, rgba(56, 189, 248, 0) 75%);
+      box-shadow: 0 0 16px #38bdf8;
+      animation: orbPulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% { opacity: 0.7; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 22px #38bdf8; }
+    }
+
+    /* ==========================================================================
+       STATE 3: SPOTLIGHT / COMMAND BAR
+       ========================================================================== */
+    .view-spotlight {
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 12px;
+    }
+
+    .search-icon {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font-ui);
+    }
+
+    .command-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .shortcut-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+      color: var(--text);
+    }
+
+    .chips-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+
+    .action-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .action-chip:hover {
+      background: rgba(125, 211, 252, 0.12);
+      border-color: var(--cyan);
+      color: var(--text);
+    }
+
+    .separator {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .timeline-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+
+    .timeline-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 6px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 6px var(--cyan);
+    }
+
+    .timeline-item.purple::before {
+      background: var(--purple);
+      box-shadow: 0 0 6px var(--purple);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timeline-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .timeline-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .timeline-body {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       STATE 4: MEDIA PLAYER
+       ========================================================================== */
+    .view-media {
+      justify-content: space-between;
+      padding: 14px 18px;
+    }
+
+    .media-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .media-info-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .album-art {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(125, 211, 252, 0.3), rgba(192, 132, 252, 0.4));
+      border: 1px solid var(--border-glow-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .track-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .track-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Sora', var(--font-ui);
+    }
+
+    .track-artist {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .media-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .time-lbl {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      width: 42%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      border-radius: 2px;
+    }
+
+    .media-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(125, 211, 252, 0.2);
+      border-color: var(--cyan);
+    }
+
+    .ctrl-btn.play-btn {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      border: none;
+      color: #0f172a;
+      font-size: 14px;
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.4);
+    }
+
+    .ctrl-btn.play-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* ==========================================================================
+       STATE 5: CRITICAL OVERRIDE / FIREWALL ALERT
+       ========================================================================== */
+    .view-alert {
+      justify-content: space-between;
+      padding: 14px 18px;
+    }
+
+    .alert-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .shield-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .alert-title-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .alert-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--danger);
+
+    }
+
+    .alert-sub {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 800;
+      color: #fecaca;
+      letter-spacing: 0.1em;
+    }
+
+    .alert-body {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .ip-badge {
+      font-family: var(--font-mono);
+      background: rgba(239, 68, 68, 0.25);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #fecaca;
+    }
+
+    .alert-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-alert-secondary {
+      flex: 1;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 10px;
+      color: #fecaca;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 8px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-alert-secondary:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-alert-primary {
+      flex: 1;
+      background: var(--danger);
+      border: none;
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 0;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+      transition: opacity 0.2s;
+    }
+
+    .btn-alert-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* ==========================================================================
+       STATE 6: INTELLIGENCE BRIEFING
+       ========================================================================== */
+    .view-brief {
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .brief-tag-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brief-headline {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    .brief-summary {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .metrics-panel {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 12px;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .metric-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .brief-quote {
+      font-size: 11px;
+      font-style: italic;
+      color: var(--purple);
+      border-left: 2px solid var(--purple);
+      padding-left: 10px;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       STATE 7: SUCCESS / COMPLETION
+       ========================================================================== */
+    .view-success {
+      justify-content: space-around;
+      padding: 14px 18px;
+    }
+
+    .success-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .check-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    /* ==========================================================================
+       STATE 8: ERROR / WARNING
+       ========================================================================== */
+    .view-error {
+      justify-content: space-around;
+      padding: 14px 18px;
+    }
+
+    /* Unobtrusive Floating Control Dock */
+    .control-dock {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 20, 26, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 6px 12px;
+      display: flex;
+      gap: 6px;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .dock-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dock-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    .dock-btn.active {
+      background: rgba(125, 211, 252, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    .dock-btn.autoplay-btn {
+      background: linear-gradient(135deg, rgba(125,211,252,0.2), rgba(192,132,252,0.2));
+      border-color: var(--purple);
+      color: var(--purple);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Backdrop Lighting -->
+  <div class="ambient-backdrop">
+    <div class="ambient-radial-glow" id="ambientGlow"></div>
+  </div>
+
+  <!-- Smart Island Container -->
+  <div class="island-viewport">
+    <div class="smart-island" id="smartIsland" data-state="standby" style="width: 240px; height: 48px; border-radius: 24px;">
+
+      <!-- VIEW 1: STANDBY -->
+      <div class="island-view view-standby active" id="view-standby" onclick="smartIsland.setState('spotlight')">
+        <div class="brand-group">
+          <div class="ansh-badge">A</div>
+          <span class="brand-title">Ansh AI</span>
+        </div>
+        <div class="status-group">
+          <div class="pulse-dot"></div>
+          <div class="equalizer-wave">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: ACTIVE PROCESSING -->
+      <div class="island-view view-processing" id="view-processing" onclick="smartIsland.setState('standby')">
+        <div class="ai-avatar">🤖</div>
+        <div class="processing-content">
+          <span class="uppercase-tag" id="procSubtitle">SYNTHESIZING REQUEST</span>
+          <span class="processing-text" id="procText">"Analyzing temporal data patterns..."</span>
+        </div>
+        <div class="glowing-orb"></div>
+      </div>
+
+      <!-- VIEW 3: SPOTLIGHT / COMMAND -->
+      <div class="island-view view-spotlight" id="view-spotlight">
+        <div class="search-row">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="command-input" id="cmdInput" placeholder="Ask Ansh AI or type a command..." autofocus />
+          <span class="shortcut-badge">⌘ K</span>
+          <button class="close-btn" onclick="smartIsland.setState('standby')">✕</button>
+        </div>
+        <div class="chips-row">
+          <button class="action-chip" onclick="smartIsland.setState('brief')">📑 Summarise Intel</button>
+          <button class="action-chip" onclick="smartIsland.setState('media')">🎵 Music Player</button>
+          <button class="action-chip" onclick="smartIsland.setState('alert')">🛡️ Firewall Alert</button>
+          <button class="action-chip" onclick="smartIsland.setState('success')">✓ Task Status</button>
+        </div>
+        <div class="separator"></div>
+        <div class="timeline-feed">
+          <div class="timeline-item">
+            <div class="timeline-header">
+              <span class="timeline-title">Quantum Supremacy Milestone Achieved</span>
+              <span class="timeline-time">09:41 AM</span>
+            </div>
+            <div class="timeline-body">
+              Research teams confirmed a sustained coherent state for over 400ms across 128-qubit array.
+            </div>
+          </div>
+          <div class="timeline-item purple">
+            <div class="timeline-header">
+              <span class="timeline-title">Neural Pathway Realignment</span>
+              <span class="timeline-time">08:15 AM</span>
+            </div>
+            <div class="timeline-body">
+              Background optimization complete. 14% decrease in predictive modeling latency.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: MEDIA PLAYER -->
+      <div class="island-view view-media" id="view-media">
+        <div class="media-top">
+          <span class="uppercase-tag">• NOW PLAYING</span>
+          <button class="close-btn" onclick="smartIsland.setState('standby')">✕</button>
+        </div>
+        <div class="media-info-row">
+          <div class="album-art">🪐</div>
+          <div class="track-details">
+            <span class="track-title" id="trackTitle">Quantum Harmonics</span>
+            <span class="track-artist" id="trackArtist">Ansh Core</span>
+          </div>
+        </div>
+        <div class="media-progress">
+          <span class="time-lbl">01:24</span>
+          <div class="progress-track">
+            <div class="progress-fill"></div>
+          </div>
+          <span class="time-lbl">03:42</span>
+        </div>
+        <div class="media-controls">
+          <button class="ctrl-btn">⏮</button>
+          <button class="ctrl-btn play-btn">▶</button>
+          <button class="ctrl-btn">⏭</button>
+        </div>
+      </div>
+
+      <!-- VIEW 5: CRITICAL OVERRIDE / FIREWALL ALERT -->
+      <div class="island-view view-alert" id="view-alert">
+        <div class="alert-header">
+          <div class="shield-badge">🛡️</div>
+          <div class="alert-title-group">
+            <span class="alert-title">Intrusion Blocked</span>
+            <span class="alert-sub">NEURAL FIREWALL ACTIVE</span>
+          </div>
+          <button class="close-btn" onclick="smartIsland.setState('standby')">✕</button>
+        </div>
+        <div class="alert-body">
+          Unauthorized access attempt detected from IP <span class="ip-badge">192.168.x.x</span>. Defense protocols engaged.
+        </div>
+        <div class="alert-actions">
+          <button class="btn-alert-secondary" onclick="smartIsland.setState('standby')">View Logs</button>
+          <button class="btn-alert-primary" onclick="smartIsland.setState('standby')">Lockdown</button>
+        </div>
+      </div>
+
+      <!-- VIEW 6: INTELLIGENCE BRIEFING -->
+      <div class="island-view view-brief" id="view-brief">
+        <div class="brief-tag-bar">
+          <span class="uppercase-tag">INTELLIGENCE_BRIEF • LIVE SYNC</span>
+          <span class="time-lbl">08:42 UTC</span>
+          <button class="close-btn" onclick="smartIsland.setState('standby')">✕</button>
+        </div>
+        <h2 class="brief-headline">Quantum Supremacy Claimed in Simulation Architecture</h2>
+        <p class="brief-summary">A breakthrough in topological qubit error correction suggests near-term viability for complex meteorological modeling.</p>
+        <div class="metrics-panel">
+          <div class="metric-item">
+            <span class="metric-label">FIDELITY</span>
+            <span class="metric-val">99.998%</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">QUBITS</span>
+            <span class="metric-val">4,096 Logical</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">DECOHERENCE</span>
+            <span class="metric-val">&lt; 0.1ms</span>
+          </div>
+        </div>
+        <p class="brief-quote">"We are moving from calculating weather to rendering it, pixel by pixel, across the entire atmosphere."</p>
+      </div>
+
+      <!-- VIEW 7: SUCCESS / COMPLETION -->
+      <div class="island-view view-success" id="view-success" onclick="smartIsland.setState('standby')">
+        <div class="success-header">
+          <div class="check-badge">✓</div>
+          <div>
+            <span class="uppercase-tag" style="color: var(--success);">TASK COMPLETED</span>
+            <h3 style="font-size: 13px; color: var(--text);">Neural Index Re-compiled</h3>
+          </div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted);">All 14 workspace models indexed cleanly with zero syntax issues.</p>
+      </div>
+
+      <!-- VIEW 8: ERROR / WARNING -->
+      <div class="island-view view-error" id="view-error" onclick="smartIsland.setState('standby')">
+        <div class="success-header">
+          <div class="check-badge" style="background: rgba(251, 191, 36, 0.2); border-color: rgba(251, 191, 36, 0.5); color: var(--warning);">⚠️</div>
+          <div>
+            <span class="uppercase-tag" style="color: var(--warning);">SYSTEM WARNING</span>
+            <h3 style="font-size: 13px; color: var(--text);">High Memory Allocation</h3>
+          </div>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted);">RAM usage at 84%. Background worker processes automatically throttled.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Interactive Demo Control Dock -->
+  <div class="control-dock">
+    <button class="dock-btn active" onclick="smartIsland.setState('standby')">Standby</button>
+    <button class="dock-btn" onclick="smartIsland.setState('processing')">Processing</button>
+    <button class="dock-btn" onclick="smartIsland.setState('spotlight')">Spotlight</button>
+    <button class="dock-btn" onclick="smartIsland.setState('media')">Media</button>
+    <button class="dock-btn" onclick="smartIsland.setState('alert')">Alert</button>
+    <button class="dock-btn" onclick="smartIsland.setState('brief')">Brief</button>
+    <button class="dock-btn" onclick="smartIsland.setState('success')">Success</button>
+    <button class="dock-btn" onclick="smartIsland.setState('error')">Error</button>
+    <button class="dock-btn autoplay-btn" id="autoPlayBtn" onclick="smartIsland.toggleAutoPlay()">⚡ Auto Sequence</button>
+  </div>
+
+  <script>
+    /**
+     * Ansh Smart Island Controller
+     */
+    class SmartIslandController {
+      constructor() {
+        self = this;
+        this.island = document.getElementById('smartIsland');
+        this.glow = document.getElementById('ambientGlow');
+        this.currentState = 'standby';
+        this.autoPlayTimer = null;
+
+        this.dimensions = {
+          standby:    { w: 144, h: 32,  radius: 16, glow: 'normal' },
+          processing: { w: 230, h: 38,  radius: 19, glow: 'active' },
+          spotlight:  { w: 340, h: 180, radius: 20, glow: 'active' },
+          media:      { w: 270, h: 140, radius: 18, glow: 'music' },
+          alert:      { w: 280, h: 120, radius: 18, glow: 'alert' },
+          brief:      { w: 340, h: 180, radius: 20, glow: 'active' },
+          success:    { w: 270, h: 72,  radius: 18, glow: 'success' },
+          error:      { w: 270, h: 72,  radius: 18, glow: 'alert' }
+        };
+
+        this.initEvents();
+      }
+
+      setState(stateName, customText = '') {
+        if (!this.dimensions[stateName]) return;
+        this.currentState = stateName;
+
+        const dim = this.dimensions[stateName];
+        this.island.setAttribute('data-glow', dim.glow);
+        this.island.style.width = dim.w + 'px';
+        this.island.style.height = dim.h + 'px';
+        this.island.style.borderRadius = dim.radius + 'px';
+
+        // Update active view visibility
+        document.querySelectorAll('.island-view').forEach(view => {
+          view.classList.remove('active');
+        });
+        const targetView = document.getElementById(`view-${stateName}`);
+        if (targetView) {
+          targetView.classList.add('active');
+        }
+
+        // Highlight active dock button
+        document.querySelectorAll('.dock-btn').forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.textContent.toLowerCase() === stateName) {
+            btn.classList.add('active');
+          }
+        });
+
+        if (stateName === 'spotlight') {
+          setTimeout(() => {
+            const input = document.getElementById('cmdInput');
+            if (input) input.focus();
+          }, 200);
+        }
+      }
+
+      initEvents() {
+        document.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            this.setState(this.currentState === 'spotlight' ? 'standby' : 'spotlight');
+          } else if (e.key === 'Escape') {
+            this.setState('standby');
+          }
+        });
+
+        const input = document.getElementById('cmdInput');
+        if (input) {
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && input.value.trim()) {
+              const text = input.value.trim();
+              input.value = '';
+              const lower = text.toLowerCase();
+              if (lower === 'media' || lower === 'music') this.setState('media');
+              else if (lower === 'brief' || lower === 'news') this.setState('brief');
+              else if (lower === 'alert' || lower === 'security') this.setState('alert');
+              else {
+                document.getElementById('procText').textContent = `"${text}"`;
+                this.setState('processing');
+              }
+            }
+          });
+        }
+      }
+
+      toggleAutoPlay() {
+        const btn = document.getElementById('autoPlayBtn');
+        if (this.autoPlayTimer) {
+          clearInterval(this.autoPlayTimer);
+          this.autoPlayTimer = null;
+          btn.classList.remove('active');
+          btn.textContent = '⚡ Auto Sequence';
+          this.setState('standby');
+        } else {
+          btn.classList.add('active');
+          btn.textContent = '⏸ Stop Sequence';
+          const sequence = ['standby', 'processing', 'spotlight', 'media', 'brief', 'alert', 'success'];
+          let idx = 0;
+          this.setState(sequence[idx]);
+          this.autoPlayTimer = setInterval(() => {
+            idx = (idx + 1) % sequence.length;
+            this.setState(sequence[idx]);
+          }, 3500);
+        }
+      }
+    }
+
+    const smartIsland = new SmartIslandController();
+  </script>
+</body>
+</html>
