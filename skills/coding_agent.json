@@ -1,0 +1,8 @@
+{
+  "id": "coding_agent",
+  "name": "Developer & Autonomous Coding Agent",
+  "description": "Reviews source code, automates project scaffoldings, debugs runtime exceptions, and executes terminal workflows.",
+  "category": "developer",
+  "author": "Ansh Core",
+  "version": "1.0.0"
+}
