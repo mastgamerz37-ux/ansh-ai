@@ -1,8 +1,18 @@
-# Python
+# Python Artifacts & Caches
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.egg-info/
+*.egg
+build/
+dist/
+release/
+release_app/
+installer/release/
+AnshAI_Release/
+*.spec
+*.exe
 
 # Virtual Environments
 venv/
@@ -10,15 +20,9 @@ env/
 ENV/
 .venv/
 
-# Build and Release
-build/
-dist/
-*.spec
-AnshAI_Release/
-*.exe
-
-# Product Activation Keys (DO NOT UPLOAD TO GITHUB)
-keys/
+# Private Product Key Generator & Plaintext Keys (DO NOT UPLOAD)
+keys/product_keys.txt
+keys/generate_keys.py
 
 # Local User Secrets & Temporary Data
 scratch/
