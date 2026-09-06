@@ -136,15 +136,22 @@ def brightness_up():
             )
     else:
         try:
-            subprocess.run(
-                ["powershell", "-Command",
-                 "(Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods)"
-                 ".WmiSetBrightness(1, [math]::Min(100, "
-                 "(Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness).CurrentBrightness + 10))"],
-                capture_output=True, timeout=5, **_WIN_HIDE
-            )
-        except Exception as e:
-            print(f"[Settings] Brightness up failed on Windows: {e}")
+            import screen_brightness_control as sbc
+            sbc.set_brightness("+10")
+        except Exception:
+            try:
+                subprocess.run(
+                    ["powershell", "-Command",
+                     "try { $wmi = Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightnessMethods -ErrorAction Stop; "
+                     "$cur = (Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightness -ErrorAction Stop).CurrentBrightness; "
+                     "$wmi.WmiSetBrightness(1, [math]::Min(100, $cur + 10)) } catch {}"],
+                    capture_output=True, timeout=2, **_WIN_HIDE
+                )
+            except Exception:
+                try:
+                    pyautogui.press("brightnessup")
+                except Exception:
+                    pass
 
 def brightness_down():
     if _OS == "Darwin":
@@ -165,15 +172,22 @@ def brightness_down():
             )
     else:
         try:
-            subprocess.run(
-                ["powershell", "-Command",
-                 "(Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightnessMethods)"
-                 ".WmiSetBrightness(1, [math]::Max(0, "
-                 "(Get-WmiObject -Namespace root/wmi -Class WmiMonitorBrightness).CurrentBrightness - 10))"],
-                capture_output=True, timeout=5, **_WIN_HIDE
-            )
-        except Exception as e:
-            print(f"[Settings] Brightness down failed on Windows: {e}")
+            import screen_brightness_control as sbc
+            sbc.set_brightness("-10")
+        except Exception:
+            try:
+                subprocess.run(
+                    ["powershell", "-Command",
+                     "try { $wmi = Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightnessMethods -ErrorAction Stop; "
+                     "$cur = (Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorBrightness -ErrorAction Stop).CurrentBrightness; "
+                     "$wmi.WmiSetBrightness(1, [math]::Max(0, $cur - 10)) } catch {}"],
+                    capture_output=True, timeout=2, **_WIN_HIDE
+                )
+            except Exception:
+                try:
+                    pyautogui.press("brightnessdown")
+                except Exception:
+                    pass
 
 def close_app():
     if _OS == "Darwin": pyautogui.hotkey("command", "q")
