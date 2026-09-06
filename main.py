@@ -3,6 +3,8 @@ import logging
 logging.getLogger("google.genai").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*automatic function calling.*")
 warnings.filterwarnings("ignore", category=RuntimeWarning, message=".*duckduckgo_search.*")
 
 import platform as _platform
@@ -1925,7 +1927,21 @@ class AnshLive:
                     print(f"[ANSH] Notice ({type(e).__name__}): {e}")
 
                 # Invalid API key — stop hammering the API, prompt re-configuration
-                if "API key not valid" in err_str:
+                if "API key not valid" in err_str or "1007" in err_str:
+                    print("\n\033[91m\033[1m❌ [API ERROR] Gemini API Key is invalid or expired.\033[0m")
+                    print("\033[96mGet your free API key at: https://aistudio.google.com/app/apikey\033[0m")
+                    try:
+                        from memory.config_manager import save_api_keys, is_valid_gemini_key
+                        new_key = input("\033[93m\033[1mEnter a valid Gemini API Key: \033[0m").strip()
+                        if is_valid_gemini_key(new_key):
+                            save_api_keys(new_key)
+                            print("\033[92m✓ New API key saved — reconnecting...\033[0m\n")
+                            self.ui._win._ready = True
+                            _conn_backoff = 1
+                            continue
+                    except Exception as input_err:
+                        print(f"[SYS] Terminal input error: {input_err}")
+
                     self.ui.write_log("ERR: API key invalid — please re-enter your key.")
                     self.ui.set_state("SLEEPING")
                     self.ui.prompt_reconfig()
@@ -1963,6 +1979,12 @@ class AnshLive:
             await asyncio.sleep(delay)
 
 def main():
+    try:
+        from core.cli_interface import ensure_terminal_credentials
+        ensure_terminal_credentials()
+    except Exception as e:
+        print(f"[SYS] CLI terminal setup error: {e}")
+
     import socket
     import sys
     try:
@@ -1992,6 +2014,12 @@ def main():
 
     ui = AnshUI("face.png")
 
+    try:
+        from core.auto_updater import start_background_updater
+        start_background_updater(log_fn=ui.write_log)
+    except Exception as e:
+        print(f"[SYS] Auto-updater initialization skipped: {e}")
+
     def runner():
         ui.wait_for_api_key()
         ansh = AnshLive(ui)
@@ -2003,6 +2031,10 @@ def main():
     threading.Thread(target=runner, daemon=True).start()
     ui.root.mainloop()
 
-if __name__ == "__main__":
+def cli():
+    import multiprocessing
+    multiprocessing.freeze_support()
     main()
-    
+
+if __name__ == "__main__":
+    cli()
