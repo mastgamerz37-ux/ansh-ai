@@ -75,6 +75,122 @@ def _read_full_config() -> dict:
         return {}
 
 
+# ── Change API Keys & Nickname Dialog ──────────────────────────────────────────
+
+class ChangeApiKeysDialog(QDialog):
+    """Futuristic modal dialog to change Gemini API Key, Groq API Key, and User Nickname."""
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("ANSH — Change API Keys & Nickname")
+        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint)
+        self.setFixedSize(450, 370)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #0c0e17;
+                color: #ffffff;
+                border-radius: 16px;
+                border: 2px solid #00d4ff;
+            }
+            QLabel {
+                color: #e2e8f0;
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QLineEdit {
+                background-color: #161a29;
+                border: 1px solid #00d4ff;
+                border-radius: 6px;
+                color: #ffffff;
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+            QLineEdit:focus {
+                border: 1.5px solid #00ffcc;
+            }
+            QPushButton#btn_save {
+                background-color: #10b981;
+                color: #ffffff;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: bold;
+                font-size: 13px;
+                border: none;
+            }
+            QPushButton#btn_save:hover {
+                background-color: #059669;
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        title_lbl = QLabel("⚙️ Change API Keys & Profile Settings")
+        title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #00d4ff;")
+        layout.addWidget(title_lbl)
+
+        from memory.config_manager import (
+            get_gemini_key, save_api_keys,
+            get_groq_key, save_groq_key,
+            get_user_name, get_assistant_name, save_assistant_config
+        )
+
+        layout.addSpacing(6)
+        layout.addWidget(QLabel("🔑 GEMINI API KEY:"))
+        self.gemini_input = QLineEdit()
+        self.gemini_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.gemini_input.setPlaceholderText("Enter Gemini API Key (AIza...)")
+        g_key = get_gemini_key() or ""
+        if not g_key.startswith("Enter") and len(g_key) > 10:
+            self.gemini_input.setText(g_key)
+        layout.addWidget(self.gemini_input)
+
+        layout.addSpacing(4)
+        layout.addWidget(QLabel("⚡ GROQ API KEY (OPTIONAL):"))
+        self.groq_input = QLineEdit()
+        self.groq_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.groq_input.setPlaceholderText("Enter Groq API Key (gsk_...)")
+        gr_key = get_groq_key() or ""
+        if not gr_key.startswith("Enter") and len(gr_key) > 10:
+            self.groq_input.setText(gr_key)
+        layout.addWidget(self.groq_input)
+
+        layout.addSpacing(4)
+        layout.addWidget(QLabel("👤 YOUR NAME / NICKNAME:"))
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText("Enter your Name / Nickname")
+        self.name_input.setText(get_user_name() or "")
+        layout.addWidget(self.name_input)
+
+        self.status_lbl = QLabel("")
+        self.status_lbl.setStyleSheet("color: #10b981; font-weight: bold; font-size: 12px;")
+        layout.addWidget(self.status_lbl)
+
+        layout.addSpacing(6)
+        save_btn = QPushButton("💾 Save Changes")
+        save_btn.setObjectName("btn_save")
+        save_btn.clicked.connect(self._save)
+        layout.addWidget(save_btn)
+
+    def _save(self):
+        from memory.config_manager import (
+            save_api_keys, save_groq_key, save_assistant_config, get_assistant_name
+        )
+        g = self.gemini_input.text().strip()
+        gr = self.groq_input.text().strip()
+        u = self.name_input.text().strip()
+
+        if g and not g.startswith("Enter"):
+            save_api_keys(g)
+        if gr and not gr.startswith("Enter"):
+            save_groq_key(gr)
+        save_assistant_config(get_assistant_name(), u)
+
+        self.status_lbl.setText("✓ Changes saved successfully!")
+        QTimer.singleShot(1000, self.accept)
+
+
 # ── Phone Pairing Dialog ──────────────────────────────────────────────────────
 
 class PhonePairingDialog(QDialog):
@@ -662,6 +778,9 @@ class SmartIslandWindow(QWidget):
             }
         """)
 
+        keys_act = menu.addAction("🔑 Change API Keys & Nickname (Gemini / Groq / Name)")
+        keys_act.triggered.connect(self.open_change_keys_dialog)
+
         phone_act = menu.addAction("📱 Connect Phone (QR Code & PIN)")
         phone_act.triggered.connect(self.open_phone_pairing)
 
@@ -678,6 +797,11 @@ class SmartIslandWindow(QWidget):
         exit_act.triggered.connect(lambda: sys.exit(0))
 
         menu.exec(global_pos)
+
+    def open_change_keys_dialog(self):
+        self.reset_idle_timer()
+        dlg = ChangeApiKeysDialog(self)
+        dlg.exec()
 
     def open_phone_pairing(self):
         """Pops up the Phone Pairing Dialog with real QR Code and 6-digit key."""
