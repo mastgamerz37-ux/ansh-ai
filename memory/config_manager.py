@@ -51,6 +51,17 @@ def get_groq_key() -> str | None:
     return load_api_keys().get("groq_api_key")
 
 
+def is_valid_groq_key(key: str | None) -> bool:
+    if not key or not isinstance(key, str):
+        return False
+    k = key.strip()
+    if len(k) < 15:
+        return False
+    if any(dummy in k for dummy in ("YOUR_GROQ", "YOUR_KEY", "dummy", "Enter", "gsk_...")):
+        return False
+    return True
+
+
 def save_groq_key(groq_api_key: str) -> None:
     ensure_config_dir()
     data: dict = {}
@@ -63,9 +74,19 @@ def save_groq_key(groq_api_key: str) -> None:
     CONFIG_FILE.write_text(json.dumps(data, indent=4), encoding="utf-8")
 
 
+def is_valid_gemini_key(key: str | None) -> bool:
+    if not key or not isinstance(key, str):
+        return False
+    k = key.strip()
+    if len(k) < 15:
+        return False
+    if any(dummy in k for dummy in ("YOUR_GEM", "YOUR_KEY", "dummy", "Enter", "aiza…")):
+        return False
+    return True
+
+
 def is_configured() -> bool:
-    key = get_gemini_key()
-    return bool(key and len(key) > 15)
+    return is_valid_gemini_key(get_gemini_key())
 
 
 def get_assistant_name() -> str:
