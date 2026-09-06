@@ -1,73 +1,144 @@
-# ⚙️ ANSH — Your Own AI Friend
-### The Ultimate Cross-Platform Personal AI Partner — Created & Developed by Anshu Dubey
+<div align="center">
 
-> 🌐 **[Get Product Keys & Activation](https://getyoursoft.page.gd)**
+# ⚡ ANSH — Your Own AI Friend
+### Autonomous Multimodal Voice Assistant • Smart Island HUD • Real-Time AI Engine
+**Created & Developed by [Anshu Dubey](https://getyoursoft.page.gd)**
 
-**ANSH** is a real-time voice AI partner that can hear, see, understand, and control your computer on any OS. Powered by the Gemini Live API for zero-latency audio streaming and Groq for System 2 autonomous goal planning.
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/mastgamerz37-ux/ansh-ai)
+[![PyPI version](https://img.shields.io/badge/PyPI-ansh--ai-orange.svg)](https://pypi.org/project/ansh-ai/)
+[![Auto-Updater](https://img.shields.io/badge/Auto--Updater-Enabled-brightgreen.svg)](https://github.com/mastgamerz37-ux/ansh-ai)
 
----
+> 🌐 **Website & Product Key Activation:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
 
-## ✨ Overview
-
-ANSH is built to be your personal AI friend. Rather than basic reactive tools, ANSH comes with System 2 multi-step autonomous goal planning, long-term fact memory, active screen & vision intelligence, and an enterprise 3-day free trial system with product key licensing.
-
----
-
-## 🔑 Licensing, 3-Day Free Trial & Product Keys
-
-ANSH includes a production-grade trial and activation system:
-- **3-Day Free Trial**: Full unrestricted access for 72 hours upon first launch.
-- **Product Key Activation**: Enter a valid activation key (`ANSH-XXXX-XXXX-XXXX`) to unlock full permanent access.
-- **Get Product Keys**: Visit [https://getyoursoft.page.gd](https://getyoursoft.page.gd) to get activation keys.
+</div>
 
 ---
 
-## 🚀 Capabilities & Features
+## 🌟 What is ANSH?
+
+**ANSH** is a production-grade personal AI assistant that can **hear, see, speak, remember, and control your computer** in real time. 
+
+Powered by the **Gemini Live API** for ultra-low latency bidirectional audio streaming and **Groq** for high-speed sub-agent reasoning, ANSH lives seamlessly on your screen as a sleek **Smart Island HUD**, providing proactive assistance, desktop automation, and multi-step problem solving.
+
+---
+
+## 🚀 Key Features
 
 | Feature | Description |
 |---|---|
-| 🎙️ Real-Time Voice | Ultra-low latency conversation powered by Gemini Live API |
-| 🧩 System 2 Reasoning | Multi-step autonomous goal planner with self-reflection & error recovery |
-| 🧠 Long-Term Memory | Persistent semantic memory store remembering developer Anshu Dubey, facts & preferences |
-| 🖥️ System Control | App launching, volume, brightness, power, shortcuts, window management |
-| 👁️ Visual Awareness | Real-time screen capture and webcam vision piped directly into session |
-| ☀ Morning Briefing | Parallel news pre-fetching, weather, and context-aware startup greetings |
-| 🔔 Proactive Intelligence | Smart silence monitoring evaluating system telemetry, screen, and clipboard data |
-| 🔐 Commercial Licensing | Integrated 3-day trial and product key validation system linked to [https://getyoursoft.page.gd](https://getyoursoft.page.gd) |
+| 🎙️ **Real-Time Live Voice** | Full duplex bidirectional voice conversation with zero perceptible latency via Gemini Live API. |
+| 🏝️ **Smart Island HUD** | Modern floating desktop widget with audio visualizer, quick actions, status pills, and context menu. |
+| 🧩 **System 2 Dual AI Planner** | Autonomous multi-step goal planning, web browsing, code execution, and self-healing error recovery. |
+| 👁️ **Visual Intelligence** | Real-time continuous screen inspection and webcam vision piped directly into the live session. |
+| 🧠 **Long-Term Memory** | Semantic facts and preferences store that remembers user details across sessions. |
+| 🖥️ **Full Desktop Control** | Launch apps, control media, adjust brightness & volume, type text, manage windows, and execute commands. |
+| 🔄 **Automated GitHub Updates** | Background auto-updater that syncs latest updates from GitHub without requiring Git CLI. |
+| 🔐 **3-Day Free Trial & Licensing** | Built-in 72-hour trial with cryptographic product key activation (`ANSH-XXXX-XXXX-XXXX`). |
 
 ---
 
-## ⚡ Quick Start
+## 📦 Installation & Setup
+
+### Option 1: Install via `pip` (Recommended)
 
 ```bash
+pip install ansh-ai
+```
+
+Run ANSH from any terminal:
+```bash
+ansh
+```
+
+---
+
+### Option 2: Standalone Windows Installer
+
+Download the official standalone installer:
+👉 **[Download ANSH_Setup_v1.0.exe](https://getyoursoft.page.gd)**
+
+---
+
+### Option 3: From Source Code
+
+```bash
+# 1. Clone repository
 git clone https://github.com/mastgamerz37-ux/ansh-ai.git
 cd ansh-ai
-pip install -r requirements.txt
+
+# 2. Install dependencies
+pip install -e .
+
+# 3. Launch ANSH
+ansh
+# or
 python main.py
 ```
 
 ---
 
-## 🛠️ Building Standalone Executable (.exe)
+## 🔑 Initial Configuration
 
-To build a single standalone Windows executable (`dist/ansh.exe`):
+On first launch, ANSH will interactively ask for your configuration in the terminal:
 
-```bash
-python build_exe.py
+1. **Gemini API Key** (Free from [Google AI Studio](https://aistudio.google.com/app/apikey))
+2. **Groq API Key** (Free from [Groq Console](https://console.groq.com/keys))
+3. **Your Nickname** (How ANSH should address you)
+
+> 💡 **Tip:** You can change your API keys or nickname anytime by right-clicking the **Smart Island HUD** and selecting **🔑 Change API Keys & Nickname**.
+
+---
+
+## 🎟️ 3-Day Free Trial & Product Keys
+
+ANSH comes with a **3-Day Free Trial (72 Hours)** upon first launch.
+
+- **Trial Period:** Full access to all capabilities with real-time trial countdown.
+- **Product Activation:** Once trial concludes, enter your product key (`ANSH-XXXX-XXXX-XXXX`) to unlock lifetime access.
+- **Get Keys:** Visit [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+
+---
+
+## ⌨️ Desktop Shortcuts & Voice Commands
+
+- **Toggle Mic / Listen:** `Ctrl + Space`
+- **Wake Word:** Say *"Hey Ansh"* or *"Ansh"*
+- **Sample Commands:**
+  - *"Search latest news on space exploration and save notes to desktop"*
+  - *"Open Spotify and turn the volume up"*
+  - *"Check the weather forecast for tomorrow"*
+  - *"Analyze what's on my screen right now"*
+
+---
+
+## 🛠️ Project Structure
+
+```text
+ansh-ai/
+├── actions/            # Desktop automation, tools, web search, computer settings
+├── core/               # Voice engine, AGI planner, Task LLM, Auto-updater, Licensing
+├── dashboard/          # Localhost command center (FastAPI + WebSocket)
+├── memory/             # Semantic markdown memory store & config management
+├── skills/             # Modular skill manifests & tool definitions
+├── smart_island.py     # PyQt6 floating Dynamic Island HUD interface
+├── ui.py               # Main UI & audio visualization window
+├── main.py             # Application entrypoint and orchestration loop
+└── pyproject.toml      # PEP 517 build configuration
 ```
 
-Any source code modifications in `main.py`, `core/`, `actions/`, `memory/`, or `ui.py` are automatically compiled into the executable build.
+---
+
+## 👤 Author & Support
+
+- **Lead Developer:** **Anshu Dubey**
+- **Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **GitHub:** [@mastgamerz37-ux](https://github.com/mastgamerz37-ux)
+- **Repository:** [mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
 
 ---
 
-## 📚 Full Documentation
+## 📄 License
 
-Comprehensive documentation is available in [`docs/DOCUMENTATION.md`](file:///d:/ansh/docs/DOCUMENTATION.md).
-
----
-
-## 👤 Developer & Licensing
-
-Designed, engineered, and developed by **Anshu Dubey**.
-Product Activation & Key Support: [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
-Licensed for personal and commercial distribution.
+This project is licensed under the **MIT License**.
