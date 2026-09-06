@@ -1,0 +1,22 @@
+include face.png
+include readme.md
+include requirements.txt
+include version_info.txt
+include keys/valid_keys.json
+
+recursive-include config *.json
+recursive-include skills *.json
+recursive-include memory/storage *.md
+recursive-include actions *.py
+recursive-include core *.py
+recursive-include dashboard *
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~
+global-exclude keys/product_keys.txt
+global-exclude keys/generate_keys.py
+global-exclude config/api_keys.json
+global-exclude config/license.json
+global-exclude *.spec
+global-exclude *.exe
