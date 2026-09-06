@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ansh-ai"
+version = "1.0.0"
+description = "ANSH - Your Own AI Friend: Real-time Multimodal Voice Assistant, Smart Island HUD & Autonomous AI System"
+readme = "readme.md"
+authors = [
+    { name = "Anshu Dubey", email = "mastgamerz37@gmail.com" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["ai", "assistant", "voice", "gemini", "groq", "hud", "desktop-automation"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: Microsoft :: Windows",
+]
+
+dependencies = [
+    "PyQt6",
+    "sounddevice",
+    "keyboard",
+    "SpeechRecognition",
+    "google-genai",
+    "google-generativeai",
+    "groq",
+    "pillow",
+    "opencv-python",
+    "numpy",
+    "mss",
+    "pyautogui",
+    "pyperclip",
+    "pygetwindow",
+    "requests",
+    "beautifulsoup4",
+    "ddgs",
+    "playwright",
+    "fastapi",
+    "uvicorn[standard]",
+    "cryptography",
+    "python-multipart",
+    "qrcode[pil]",
+    "psutil",
+    "pynvml",
+    "send2trash",
+    "youtube-transcript-api",
+    "python-pptx",
+    "python-docx",
+    "pypdf",
+    "openpyxl",
+    "comtypes; sys_platform == 'win32'",
+    "pycaw; sys_platform == 'win32'",
+    "win10toast; sys_platform == 'win32'",
+    "pywinauto; sys_platform == 'win32'",
+    "pywin32; sys_platform == 'win32'",
+    "wmi; sys_platform == 'win32'",
+]
+
+[project.urls]
+Homepage = "https://getyoursoft.page.gd"
+Repository = "https://github.com/mastgamerz37-ux/ansh-ai"
+
+[project.scripts]
+ansh = "main:cli"
+
+[tool.setuptools]
+py-modules = ["main", "ui", "smart_ui", "smart_island", "location"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "actions*", "memory*", "dashboard*", "skills*", "config*", "keys*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.png", "*.json", "*.md", "*.txt", "*.iss"]
+
