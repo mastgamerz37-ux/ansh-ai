@@ -9,6 +9,10 @@ Routing Strategy:
 """
 from __future__ import annotations
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", message=".*automatic function calling.*")
+
 import json
 import os
 import re
