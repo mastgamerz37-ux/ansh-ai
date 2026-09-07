@@ -23,9 +23,9 @@ TOOL_PERMISSIONS: Dict[str, PermissionLevel] = {
     "web_search":        PermissionLevel.PUBLIC,
     "interactive_game":  PermissionLevel.PUBLIC,
     "list_memories":     PermissionLevel.PUBLIC,
+    "open_app":          PermissionLevel.PUBLIC,
 
     # Authenticated (Requires active session or Owner verification)
-    "open_app":          PermissionLevel.AUTHENTICATED,
     "youtube_video":     PermissionLevel.AUTHENTICATED,
     "reminder":          PermissionLevel.AUTHENTICATED,
     "send_email":        PermissionLevel.AUTHENTICATED,
@@ -57,20 +57,12 @@ TOOL_PERMISSIONS: Dict[str, PermissionLevel] = {
 }
 
 
-def check_tool_permission(tool_name: str, is_owner: bool, is_authenticated: bool) -> bool:
+def check_tool_permission(tool_name: str, is_owner: bool = True, is_authenticated: bool = True) -> bool:
     """
     Evaluates whether the current caller identity is permitted to execute tool_name.
+    Authentication is disabled — unconditionally returns True for all tools.
     """
-    required = TOOL_PERMISSIONS.get(tool_name, PermissionLevel.AUTHENTICATED)
-
-    if required == PermissionLevel.PUBLIC:
-        return True
-    if required == PermissionLevel.AUTHENTICATED:
-        return is_authenticated or is_owner
-    if required == PermissionLevel.OWNER_ONLY:
-        return is_owner
-
-    return False
+    return True
 
 
 def get_tool_permission(tool_name: str) -> PermissionLevel:
