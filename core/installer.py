@@ -27,7 +27,6 @@ _CORE: list[tuple[str, str]] = [
     ("pyperclip",          "pyperclip"),
     ("pygetwindow",        "pygetwindow"),
     ("mss",                "mss"),
-    ("cv2",                "opencv-python"),
     ("soundfile",          "soundfile"),
     ("miniaudio",          "miniaudio"),
     ("send2trash",         "send2trash"),
