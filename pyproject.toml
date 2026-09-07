@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ansh-ai"
-version = "1.0.0"
+name = "ansh-assistant"
+version = "1.0.2"
 description = "ANSH - Your Own AI Friend: Real-time Multimodal Voice Assistant, Smart Island HUD & Autonomous AI System"
 readme = "readme.md"
 authors = [
@@ -34,7 +34,6 @@ dependencies = [
     "google-generativeai",
     "groq",
     "pillow",
-    "opencv-python",
     "numpy",
     "mss",
     "pyautogui",
