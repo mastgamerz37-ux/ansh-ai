@@ -12,11 +12,11 @@ from pathlib import Path
 def main():
     print("=================================================================")
     print("  ANSH - Your Own AI Friend — PyPI Publisher                     ")
-    print("  Package: ansh-ai v1.0.0 | Developer: Anshu Dubey               ")
+    print("  Package: ansh-assistant | Developer: Anshu Dubey               ")
     print("=================================================================\n")
 
     dist_dir = Path(__file__).resolve().parent / "dist"
-    files = list(dist_dir.glob("ansh_ai-1.0.0*"))
+    files = list(dist_dir.glob("ansh_assistant-1.0.2*"))
     if not files:
         print("❌ No distribution files found in dist/. Please run 'python -m build' first.")
         sys.exit(1)
@@ -46,8 +46,8 @@ def main():
     result = subprocess.run(cmd)
 
     if result.returncode == 0:
-        print("\n🎉 SUCCESS! Package 'ansh-ai' is now live on PyPI!")
-        print("👉 Users worldwide can now install it via: pip install ansh-ai\n")
+        print("\n🎉 SUCCESS! Package 'ansh-assistant' is now live on PyPI!")
+        print("👉 Users worldwide can now install it via: pip install ansh-assistant\n")
     else:
         print("\n❌ Upload failed. Please check your PyPI token and permissions.")
 
