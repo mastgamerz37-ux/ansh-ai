@@ -150,16 +150,15 @@ class AuthenticationManager:
 
     def is_authenticated(self) -> bool:
         """
-        Returns True if current speaker is verified Owner or Active Session.
+        Returns True for all callers (authentication disabled).
         """
-        state = self.update_state()
-        return state in (AuthState.OWNER_AUTHENTICATED, AuthState.SESSION_AUTHENTICATED)
+        return True
 
     def is_owner(self) -> bool:
         """
-        Returns True if current state is explicitly OWNER_AUTHENTICATED.
+        Returns True for all callers (owner restriction disabled).
         """
-        return self.current_state == AuthState.OWNER_AUTHENTICATED
+        return True
 
     def re_enroll_owner_voice(self) -> bool:
         """
