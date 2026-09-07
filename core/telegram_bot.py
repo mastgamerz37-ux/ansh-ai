@@ -161,27 +161,7 @@ class TelegramRemoteBot:
             self.send_message(chat_id, f"❌ Screenshot failed: {e}")
 
     def _handle_webcam(self, chat_id: str | int) -> None:
-        self.send_message(chat_id, "📷 <i>Capturing webcam photo…</i>")
-        try:
-            import cv2
-            cap = cv2.VideoCapture(0)
-            if not cap.isOpened():
-                self.send_message(chat_id, "❌ Webcam is unavailable or in use by another app.")
-                return
-            # Let sensor auto-expose
-            for _ in range(5):
-                cap.read()
-            ret, frame = cap.read()
-            cap.release()
-            if not ret or frame is None:
-                self.send_message(chat_id, "❌ Failed to read frame from webcam.")
-                return
-
-            ret, buf = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 88])
-            now_str = datetime.now().strftime("%I:%M:%S %p")
-            self.send_photo(chat_id, buf.tobytes(), caption=f"📷 <b>Laptop Webcam</b> ({now_str})", filename="webcam.jpg")
-        except Exception as e:
-            self.send_message(chat_id, f"❌ Webcam error: {e}")
+        self.send_message(chat_id, "📷 <i>Webcam capture is disabled (OpenCV dependency removed).</i>")
 
     def _handle_status(self, chat_id: str | int) -> None:
         try:
