@@ -318,7 +318,6 @@ class SmartIslandWindow(QWidget):
     command_submitted = pyqtSignal(str)
     dashboard_requested = pyqtSignal()
     media_updated = pyqtSignal(dict)
-    airtouch_alert = pyqtSignal(dict)
 
     STATE_STANDBY       = "STANDBY"
     STATE_SPOTLIGHT     = "SPOTLIGHT"
@@ -354,15 +353,6 @@ class SmartIslandWindow(QWidget):
             self.dashboard_requested.connect(self.on_open_dashboard)
 
         self.media_updated.connect(self._apply_media_info)
-
-        # Initialize AirTouch Vision Engine (runs silently in background, no intrusive UI alerts)
-        try:
-            from core.airtouch import AirTouchEngine
-            self.airtouch = AirTouchEngine.get_instance()
-            self.airtouch.start()
-        except Exception as e:
-            print(f"[SmartIsland] AirTouch init note: {e}")
-            self.airtouch = None
 
 
         # Media Auto-Poll Timer
@@ -638,7 +628,7 @@ class SmartIslandWindow(QWidget):
         shield_icon = SvgLabel("shield", 12, "#ef4444")
         hdr.addWidget(shield_icon)
 
-        self.alert_t = QLabel("AirTouch: Unknown User")
+        self.alert_t = QLabel("Security Alert")
         self.alert_t.setStyleSheet("color: #ef4444; font-size: 11px; font-weight: 700;")
         hdr.addWidget(self.alert_t, stretch=1)
 
@@ -651,7 +641,7 @@ class SmartIslandWindow(QWidget):
         hdr.addWidget(close_btn)
         layout.addLayout(hdr)
 
-        self.alert_desc = QLabel("Camera detected an unknown face. Ye kon hain?")
+        self.alert_desc = QLabel("Unknown activity detected.")
         self.alert_desc.setStyleSheet("color: #f1f5f9; font-size: 9px;")
         self.alert_desc.setWordWrap(True)
         layout.addWidget(self.alert_desc)
@@ -660,7 +650,7 @@ class SmartIslandWindow(QWidget):
         input_row.setSpacing(4)
 
         self.alert_person_input = QLineEdit()
-        self.alert_person_input.setPlaceholderText("Enter name (e.g., Rahul - Friend)...")
+        self.alert_person_input.setPlaceholderText("Enter details...")
         self.alert_person_input.setStyleSheet(f"QLineEdit {{ background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; color: {SmartIslandTheme.TEXT_MAIN}; font-size: 10px; padding: 1px 5px; }}")
         self.alert_person_input.returnPressed.connect(self._save_alert_person_identity)
         input_row.addWidget(self.alert_person_input, stretch=1)
@@ -676,27 +666,13 @@ class SmartIslandWindow(QWidget):
 
 
     def _handle_unknown_person_detected(self, info: dict):
-        """Triggered by AirTouch camera vision when an unknown face is detected."""
-        self.alert_t.setText("AirTouch: Unknown User")
-        self.alert_desc.setText("Camera detected an unknown face. Ye kon hain?")
+        self.alert_t.setText("Security Alert")
+        self.alert_desc.setText("Unknown activity detected.")
         self.alert_person_input.clear()
         self.set_state(self.STATE_ALERT)
         self.alert_person_input.setFocus()
 
     def _save_alert_person_identity(self):
-        text = self.alert_person_input.text().strip()
-        if not text:
-            self.set_state(self.STATE_STANDBY)
-            return
-
-        parts = text.split("-", 1)
-        name = parts[0].strip()
-        notes = parts[1].strip() if len(parts) > 1 else "Friend/Known person"
-
-        if hasattr(self, "airtouch") and self.airtouch:
-            msg = self.airtouch.register_identity(name, notes)
-            print(f"[SmartIsland] AirTouch Identity Saved: {msg}")
-
         self.set_state(self.STATE_STANDBY)
 
 
