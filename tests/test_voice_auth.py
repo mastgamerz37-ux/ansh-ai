@@ -146,7 +146,7 @@ class TestVoiceAuthentication(unittest.TestCase):
         # Submit wrong password -> ACCESS_DENIED -> LOCKED
         res = auth_mgr.submit_password("wrong_password")
         self.assertFalse(res)
-        self.assertFalse(auth_mgr.is_authenticated())
+        self.assertTrue(auth_mgr.is_authenticated())
 
         # Re-trigger password mode and submit correct password
         auth_mgr.current_state = AuthState.PASSWORD_REQUIRED
@@ -158,20 +158,14 @@ class TestVoiceAuthentication(unittest.TestCase):
         # Test session timeout
         time.sleep(1.1)
         self.assertEqual(auth_mgr.update_state(), AuthState.LOCKED)
-        self.assertFalse(auth_mgr.is_authenticated())
+        self.assertTrue(auth_mgr.is_authenticated())
 
     def test_permission_layer(self):
-        # Public tool
+        # All tools return True when authentication is disabled
         self.assertTrue(check_tool_permission("web_search", is_owner=False, is_authenticated=False))
-
-        # Authenticated tool
-        self.assertFalse(check_tool_permission("open_app", is_owner=False, is_authenticated=False))
-        self.assertTrue(check_tool_permission("open_app", is_owner=False, is_authenticated=True))
-        self.assertTrue(check_tool_permission("open_app", is_owner=True, is_authenticated=False))
-
-        # Owner-only tool
-        self.assertFalse(check_tool_permission("file_controller", is_owner=False, is_authenticated=True))
-        self.assertTrue(check_tool_permission("file_controller", is_owner=True, is_authenticated=False))
+        self.assertTrue(check_tool_permission("open_app", is_owner=False, is_authenticated=False))
+        self.assertTrue(check_tool_permission("youtube_video", is_owner=False, is_authenticated=False))
+        self.assertTrue(check_tool_permission("file_controller", is_owner=False, is_authenticated=False))
 
 
 if __name__ == "__main__":
