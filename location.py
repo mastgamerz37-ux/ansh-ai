@@ -102,7 +102,7 @@ def main():
     print(f" • Screen Resolution       : {t['width']} x {t['height']} px")
     print(f" • Screen Bounds (L, T)     : Left={t['left']}, Top={t['top']}")
     print(f" • Device Pixel Ratio (DPI) : {t['device_pixel_ratio']}")
-    print("-" * 60)p
+    print("-" * 60)
     print(f" 🎯 TOP CAMERA CENTER TARGET : X = {t['top_center_x']} px, Y = {t['top_center_y']} px")
     print(f" 🎯 SCREEN DEAD CENTER TARGET: X = {t['screen_center_x']} px, Y = {t['screen_center_y']} px")
     print("=" * 60 + "\n")
