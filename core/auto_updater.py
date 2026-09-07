@@ -151,17 +151,33 @@ def sync_github_updates(log_fn: Optional[Callable[[str], None]] = None) -> bool:
     return True
 
 
-def start_background_updater(log_fn: Optional[Callable[[str], None]] = None, check_interval_seconds: int = 300) -> threading.Thread:
-    def _loop():
+def start_background_updater(
+    log_fn: Optional[Callable[[str], None]] = None,
+    check_interval_seconds: int = 300,
+    once: bool = True
+) -> threading.Thread:
+    """
+    Starts auto updater thread.
+    If once=True (default), it checks and updates only ONCE at startup (after a 5s delay).
+    If once=False, it will repeat every check_interval_seconds.
+    """
+    def _run():
         # First check at startup after 5 seconds delay
         time.sleep(5)
-        while True:
-            try:
-                sync_github_updates(log_fn)
-            except Exception as e:
-                print(f"[AutoUpdater] Loop error: {e}")
-            time.sleep(check_interval_seconds)
+        try:
+            sync_github_updates(log_fn)
+        except Exception as e:
+            print(f"[AutoUpdater] Error during sync: {e}")
 
-    t = threading.Thread(target=_loop, daemon=True, name="ANSH-AutoUpdater")
+        if not once:
+            while True:
+                time.sleep(check_interval_seconds)
+                try:
+                    sync_github_updates(log_fn)
+                except Exception as e:
+                    print(f"[AutoUpdater] Loop error: {e}")
+
+    t = threading.Thread(target=_run, daemon=True, name="ANSH-AutoUpdater")
     t.start()
     return t
+
