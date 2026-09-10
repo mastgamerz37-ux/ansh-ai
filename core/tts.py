@@ -134,10 +134,12 @@ def _play_audio_bytes(audio_bytes: bytes) -> None:
 # ---------------------------------------------------------------------------
 
 class EdgeTTSEngine:
-    """Microsoft EdgeTTS – free, requires internet."""
+    """Microsoft EdgeTTS – free, requires internet, supports emotion-aware prosody."""
 
-    def __init__(self, voice: str = "hi-IN-MadhurNeural"):
+    def __init__(self, voice: str = "en-IN-PrabhatNeural", rate: str = "+0%", pitch: str = "+0Hz"):
         self.voice = voice
+        self.rate = rate
+        self.pitch = pitch
 
     def speak(self, text: str) -> None:
         loop = asyncio.new_event_loop()
@@ -150,22 +152,90 @@ class EdgeTTSEngine:
 
     async def _synth(self, text: str) -> bytes:
         import edge_tts
-        # Dynamic language & voice selection matching local owner voice
         voice_to_use = self.voice
         has_hindi = any("\u0900" <= c <= "\u097f" for c in text) or any(
-            w in text.lower() for w in ["namaste", "kaise", "hai", "bhai", "shukriya", "achha", "haanji", "sun", "meri", "awaj", "bol"]
+            w in text.lower() for w in ["namaste", "kaise", "hai", "bhai", "shukriya", "achha", "haanji", "sun", "meri", "awaj", "bol", "kya", "suno", "theek", "arey", "karega", "hota"]
         )
         if has_hindi:
             voice_to_use = "hi-IN-MadhurNeural"
-        elif voice_to_use in ("en-US-GuyNeural", "default"):
+        elif voice_to_use in ("en-US-GuyNeural", "default", "hi-IN-SwaraNeural", "en-IN-NeerjaNeural"):
             voice_to_use = "en-IN-PrabhatNeural"
 
-        comm = edge_tts.Communicate(text, voice_to_use)
+        # Adaptive prosody based on Affective Engine emotion if default rates
+        rate_to_use = self.rate
+        pitch_to_use = self.pitch
+        try:
+            from core.affective_engine import AffectiveEngine, EmotionalState
+            aff = AffectiveEngine.get_instance()
+            state = aff.current_state
+            if state == EmotionalState.FRUSTRATED_STRESSED:
+                rate_to_use = "-6%"
+                pitch_to_use = "-2Hz"
+            elif state == EmotionalState.TIRED_EXHAUSTED:
+                rate_to_use = "-10%"
+                pitch_to_use = "-4Hz"
+            elif state == EmotionalState.JOYFUL_CASUAL:
+                rate_to_use = "+5%"
+                pitch_to_use = "+3Hz"
+            elif state == EmotionalState.FOCUSED_SERIOUS:
+                rate_to_use = "+4%"
+                pitch_to_use = "+0Hz"
+        except Exception:
+            pass
+
+        comm = edge_tts.Communicate(text, voice_to_use, rate=rate_to_use, pitch=pitch_to_use)
         buf  = bytearray()
         async for chunk in comm.stream():
             if chunk["type"] == "audio":
                 buf.extend(chunk["data"])
         return bytes(buf)
+
+
+class IndianVernacularTTSEngine:
+    """
+    Hyper-realistic Indian Vernacular Voice Synthesis Engine.
+    Provides authentic Indian English, Hindi, and Hinglish vernacular accents
+    with deep emotional prosody matching ANSH's active emotional state.
+    """
+
+    INDIAN_VOICES = {
+        "hindi_male": "hi-IN-MadhurNeural",
+        "hindi_female": "hi-IN-SwaraNeural",
+        "english_male": "en-IN-PrabhatNeural",
+        "english_female": "en-IN-NeerjaNeural",
+        "bengali_male": "bn-IN-BashkarNeural",
+        "tamil_male": "ta-IN-ValluvarNeural",
+        "telugu_male": "te-IN-MohanNeural",
+        "marathi_male": "mr-IN-ManoharNeural",
+    }
+
+    def __init__(self, default_voice: str = "en-IN-PrabhatNeural"):
+        self.default_voice = default_voice
+        self._edge = EdgeTTSEngine(voice=default_voice)
+
+    def speak(self, text: str) -> None:
+        if not text or not text.strip():
+            return
+
+        text_str = text.strip()
+        # Detect regional or language markers
+        has_devanagari = any("\u0900" <= c <= "\u097f" for c in text_str)
+        has_hinglish_slang = any(
+            w in text_str.lower() for w in [
+                "bhai", "arey", "sahi hai", "kya baat", "mast", "yaar", "theek",
+                "achha", "shukriya", "chalo", "dekho", "kaam", "bol"
+            ]
+        )
+
+        selected_voice = self.default_voice
+        if has_devanagari or (has_hinglish_slang and len(text_str.split()) < 8):
+            selected_voice = self.INDIAN_VOICES["hindi_male"]
+        else:
+            selected_voice = self.INDIAN_VOICES["english_male"]
+
+        self._edge.voice = selected_voice
+        self._edge.speak(text_str)
+
 
 
 # ---------------------------------------------------------------------------
@@ -417,6 +487,64 @@ class ElevenLabsTTSEngine:
         _play_audio_bytes(resp.content)
 
 
+class FishAudioTTSEngine:
+    """Fish Audio cloud TTS (fish.audio) — Ultra-realistic AI voice synthesis using Male Verity voice model."""
+
+    VERITY_MODEL_ID = "711cf3ed00ab441a8f54a45058047b7a"
+
+    def __init__(
+        self,
+        api_key: str,
+        voice_id: str = "711cf3ed00ab441a8f54a45058047b7a",
+        fallback_voice: str = "en-IN-PrabhatNeural"
+    ):
+        self.api_key = api_key
+        self.voice_id = voice_id or self.VERITY_MODEL_ID
+        self.fallback_voice = fallback_voice
+        self._fallback_engine = EdgeTTSEngine(voice=fallback_voice)
+
+    def speak(self, text: str) -> None:
+        if not text or not text.strip():
+            return
+
+        # 1. Primary: Direct Fish Audio API synthesis with Verity voice model
+        if self.api_key and self.api_key.strip() and self.api_key.strip() != "YOUR_FISH_AUDIO_API_KEY":
+            import requests
+            headers = {
+                "Authorization": f"Bearer {self.api_key.strip()}",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "text": text.strip(),
+                "reference_id": self.voice_id,
+                "format": "mp3",
+            }
+            try:
+                resp = requests.post(
+                    "https://api.fish.audio/v1/tts",
+                    json=payload,
+                    headers=headers,
+                    timeout=25,
+                )
+                if resp.status_code == 200 and resp.content:
+                    _play_audio_bytes(resp.content)
+                    return
+                else:
+                    print(f"[FishAudio] Note: HTTP {resp.status_code} ({resp.text[:80]}) — using Verity-matched neural voice")
+            except Exception as ex:
+                print(f"[FishAudio] Request note: {ex} — using Verity-matched neural voice")
+
+        # 2. Seamless Fallback: Animated & expressive male neural voice matching Verity
+        try:
+            has_hindi = any("\u0900" <= c <= "\u097f" for c in text) or any(
+                w in text.lower() for w in ["namaste", "kaise", "hai", "bhai", "shukriya", "achha", "haanji", "sun", "meri", "awaj", "bol", "kya", "suno", "theek"]
+            )
+            v = "hi-IN-MadhurNeural" if has_hindi else self.fallback_voice
+            EdgeTTSEngine(voice=v).speak(text)
+        except Exception:
+            self._fallback_engine.speak(text)
+
+
 class LocalCustomVoiceEngine:
     """Local Custom Voice Engine (User's Voice).
     Synthesizes speech dynamically matching the owner's voice characteristics
@@ -519,8 +647,16 @@ class TTSPlayer:
 # ---------------------------------------------------------------------------
 
 def create_tts_player(config: dict) -> TTSPlayer:
-    engine_name = config.get("tts_engine", "edgetts").lower()
-    if engine_name in ("local", "custom", "my_voice", "owner"):
+    engine_name = config.get("tts_engine", "fish_audio").lower()
+    fish_key = config.get("fish_audio_api_key", "")
+
+    if engine_name in ("vernacular", "indian", "indian_vernacular"):
+        voice = config.get("tts_voice", "en-IN-PrabhatNeural")
+        engine = IndianVernacularTTSEngine(default_voice=voice)
+    elif engine_name in ("fish", "fishaudio", "fish_audio") or (fish_key and engine_name not in ("local", "custom", "my_voice", "owner", "kokoro", "elevenlabs")):
+        voice_id = config.get("fish_audio_voice_id") or "711cf3ed00ab441a8f54a45058047b7a"
+        engine   = FishAudioTTSEngine(api_key=fish_key, voice_id=voice_id)
+    elif engine_name in ("local", "custom", "my_voice", "owner"):
         voice_path = config.get("custom_voice_path", os.path.join("data", "voice_samples"))
         engine = LocalCustomVoiceEngine(voice_path=voice_path)
     elif engine_name == "kokoro":
@@ -531,8 +667,33 @@ def create_tts_player(config: dict) -> TTSPlayer:
         api_key  = config.get("elevenlabs_api_key", "")
         voice_id = config.get("tts_voice", "pNInz6obpgDQGcFmaJgB")
         engine   = ElevenLabsTTSEngine(api_key=api_key, voice_id=voice_id)
-    else:   # edgetts (default)
-        voice  = config.get("tts_voice", "en-US-GuyNeural")
+    else:   # edgetts
+        voice  = config.get("tts_voice", "en-IN-PrabhatNeural")
         engine = EdgeTTSEngine(voice=voice)
     return TTSPlayer(engine)
+
+
+_GLOBAL_PLAYER: Optional[TTSPlayer] = None
+
+def get_global_tts_player() -> TTSPlayer:
+    global _GLOBAL_PLAYER
+    if _GLOBAL_PLAYER is None:
+        try:
+            from core.task_llm import load_config
+            cfg = load_config()
+        except Exception:
+            cfg = {}
+        _GLOBAL_PLAYER = create_tts_player(cfg)
+    return _GLOBAL_PLAYER
+
+
+def play_tts_async(text: str) -> None:
+    """Plays TTS text asynchronously in a background thread."""
+    try:
+        player = get_global_tts_player()
+        t = threading.Thread(target=player.speak, args=(text,), daemon=True)
+        t.start()
+    except Exception as e:
+        print(f"[TTS] play_tts_async note: {e}")
+
 
