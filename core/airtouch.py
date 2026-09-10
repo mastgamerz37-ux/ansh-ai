@@ -4,6 +4,7 @@ Optimized for zero-lag performance, one-shot face snapshot recognition, and long
 """
 from __future__ import annotations
 
+import math
 import os
 import json
 import time
@@ -70,9 +71,13 @@ class AirTouchEngine:
 
         self.on_unknown_face: Optional[Callable[[dict], None]] = None
         self.on_known_face: Optional[Callable[[str], None]] = None
+        self.on_gesture: Optional[Callable[[str], None]] = None
+        self.last_gesture: Optional[str] = None
+        self.last_gesture_time: float = 0.0
 
         self._lock = threading.Lock()
         self.known_faces: Dict[str, dict] = {}
+        self.last_frame: Optional[np.ndarray] = None
         self.last_unknown_crop: Optional[np.ndarray] = None
         self.last_unknown_feature: Optional[List[float]] = None
         self.last_unknown_time: float = 0.0
@@ -142,6 +147,56 @@ class AirTouchEngine:
                     faces.append((x, y, w, h))
         return faces
 
+    def _detect_gestures_simple(self, frame: np.ndarray) -> Optional[str]:
+        """Detects hand gestures (OPEN_PALM, THUMBS_UP, PEACE_SIGN) using contour hull & convexity defects."""
+        try:
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            lower_skin = np.array([0, 25, 60], dtype=np.uint8)
+            upper_skin = np.array([25, 255, 255], dtype=np.uint8)
+            mask = cv2.inRange(hsv, lower_skin, upper_skin)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            mask = cv2.dilate(mask, kernel, iterations=2)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if not contours:
+                return None
+
+            max_cnt = max(contours, key=cv2.contourArea)
+            area = cv2.contourArea(max_cnt)
+            h_frame, w_frame = frame.shape[:2]
+            if area < (h_frame * w_frame * 0.04):
+                return None
+
+            hull = cv2.convexHull(max_cnt, returnPoints=False)
+            if hull is None or len(hull) <= 3:
+                return None
+
+            defects = cv2.convexityDefects(max_cnt, hull)
+            if defects is None:
+                return None
+
+            finger_count = 0
+            for i in range(defects.shape[0]):
+                s, e, f, d = defects[i, 0]
+                start = max_cnt[s][0]
+                end = max_cnt[e][0]
+                far = max_cnt[f][0]
+                a = math.sqrt((end[0] - start[0])**2 + (end[1] - start[1])**2)
+                b = math.sqrt((far[0] - start[0])**2 + (far[1] - start[1])**2)
+                c = math.sqrt((end[0] - far[0])**2 + (end[1] - far[1])**2)
+                angle = math.acos(max(-1.0, min(1.0, (b**2 + c**2 - a**2) / (2 * b * c + 1e-6))))
+                if angle <= math.pi / 2 and d > 12000:
+                    finger_count += 1
+
+            if finger_count >= 4:
+                return "OPEN_PALM"  # Halt / Stop / Mute
+            elif finger_count == 2:
+                return "PEACE_SIGN"  # Toggle HUD
+            elif finger_count == 1:
+                return "THUMBS_UP"   # Confirm
+        except Exception:
+            pass
+        return None
+
     def _worker_loop(self):
         cap = None
         try:
@@ -162,10 +217,32 @@ class AirTouchEngine:
                     time.sleep(0.5)
                     continue
 
+                self.last_frame = frame
+
                 frame_count += 1
-                if frame_count % 10 != 0:
-                    time.sleep(0.05)
+                if frame_count % 5 != 0:
+                    time.sleep(0.04)
                     continue
+
+                now = time.time()
+
+                # ── Real-Time Gesture Detection ───────────────────────────
+                gesture = self._detect_gestures_simple(frame)
+                if gesture and (now - self.last_gesture_time > 2.0):
+                    self.last_gesture = gesture
+                    self.last_gesture_time = now
+                    print(f"[AirTouch] 🖐️ Hand gesture detected: {gesture}")
+                    if gesture == "OPEN_PALM":
+                        try:
+                            from core.security_engine import SecurityEngine
+                            SecurityEngine.get_instance().trigger_emergency_stop()
+                        except Exception:
+                            pass
+                    if self.on_gesture:
+                        try:
+                            self.on_gesture(gesture)
+                        except Exception:
+                            pass
 
                 faces = self._detect_faces_simple(frame)
                 if not faces:
@@ -226,6 +303,12 @@ class AirTouchEngine:
             except Exception:
                 pass
 
+    def get_current_frame(self) -> Optional[np.ndarray]:
+        """Returns the most recent live webcam frame captured by AirTouch."""
+        with self._lock:
+            if self.last_frame is not None:
+                return self.last_frame.copy()
+        return None
 
     def register_identity(self, person_name: str, relation_or_notes: str = "") -> str:
         """
