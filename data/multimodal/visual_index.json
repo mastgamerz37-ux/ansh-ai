@@ -1,0 +1,54 @@
+[
+  {
+    "id": "69f3a943fe01",
+    "timestamp": 1789037092.9126687,
+    "time_str": "2026-09-10 16:14:52",
+    "app_name": "Code",
+    "window_title": "main.py - ANSH",
+    "summary_text": "VS Code open with main.py",
+    "tags": [
+      "python",
+      "ide"
+    ],
+    "thumbnail_file": ""
+  },
+  {
+    "id": "f0f5ce94c5ae",
+    "timestamp": 1789037151.2191443,
+    "time_str": "2026-09-10 16:15:51",
+    "app_name": "Code",
+    "window_title": "main.py - ANSH",
+    "summary_text": "VS Code open with main.py",
+    "tags": [
+      "python",
+      "ide"
+    ],
+    "thumbnail_file": ""
+  },
+  {
+    "id": "0ccd884cfa9c",
+    "timestamp": 1789037671.0562997,
+    "time_str": "2026-09-10 16:24:31",
+    "app_name": "Code",
+    "window_title": "main.py - ANSH",
+    "summary_text": "VS Code open with main.py",
+    "tags": [
+      "python",
+      "ide"
+    ],
+    "thumbnail_file": ""
+  },
+  {
+    "id": "2ef94079cba4",
+    "timestamp": 1789039282.6552722,
+    "time_str": "2026-09-10 16:51:22",
+    "app_name": "Code",
+    "window_title": "main.py - ANSH",
+    "summary_text": "VS Code open with main.py",
+    "tags": [
+      "python",
+      "ide"
+    ],
+    "thumbnail_file": ""
+  }
+]
