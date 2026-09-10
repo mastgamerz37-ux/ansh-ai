@@ -162,12 +162,21 @@ def call_task_llm(
             print(f"[TaskLLM] ⚠️ Groq call failed ({e}). Falling back to Gemini...")
 
     # Fallback to Gemini
-    return _call_gemini(
-        prompt=prompt,
-        system=system,
-        model=DEFAULT_GEMINI_MODEL if model == DEFAULT_GROQ_MODEL else model,
-        temperature=temperature,
-    )
+    try:
+        return _call_gemini(
+            prompt=prompt,
+            system=system,
+            model=DEFAULT_GEMINI_MODEL if model == DEFAULT_GROQ_MODEL else model,
+            temperature=temperature,
+        )
+    except Exception as gemini_err:
+        print(f"[TaskLLM] ⚠️ Gemini call failed ({gemini_err}). Activating Offline Local SLM fallback...")
+        try:
+            from core.local_engine import call_local_slm
+            return call_local_slm(prompt=prompt, system=system, temperature=temperature)
+        except Exception as local_err:
+            print(f"[TaskLLM] ❌ Local fallback error: {local_err}")
+            raise gemini_err
 
 
 class _TaskResponse:
