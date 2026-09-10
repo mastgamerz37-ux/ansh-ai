@@ -1,0 +1,46 @@
+{
+  "relations": [
+    {
+      "subject": "Anshu",
+      "predicate": "created",
+      "object": "Ansh",
+      "confidence": 1.0,
+      "created_at": 1789037092.863633
+    },
+    {
+      "subject": "Ansh",
+      "predicate": "runs_on",
+      "object": "Windows",
+      "confidence": 0.95,
+      "created_at": 1789037092.8648617
+    },
+    {
+      "subject": "User",
+      "predicate": "likes",
+      "object": "Cold Coffee",
+      "confidence": 0.95,
+      "created_at": 1789039263.2004838
+    },
+    {
+      "subject": "User",
+      "predicate": "favorite_color",
+      "object": "Dark Blue",
+      "confidence": 1.0,
+      "created_at": 1789039263.2221248
+    },
+    {
+      "subject": "User",
+      "predicate": "works_on",
+      "object": "Ek Portfolio Website",
+      "confidence": 1.0,
+      "created_at": 1789039263.2448976
+    },
+    {
+      "subject": "User",
+      "predicate": "mera dost",
+      "object": "Rohan",
+      "confidence": 1.0,
+      "created_at": 1789039263.2663167
+    }
+  ]
+}
