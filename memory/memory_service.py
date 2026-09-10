@@ -247,31 +247,56 @@ class MemoryService:
 
     def get_core_identity_summary(self) -> str:
         """
-        Returns high-priority identity and core preferences for initial system prompt.
-        Compact and token-efficient.
+        Returns high-priority identity, preferences, projects, relationships,
+        and notes for initial system prompt so ANSH never forgets.
         """
         self.index.refresh()
         entries = self.index.get_all_entries()
         core_lines = []
-
-        # Personal identity items
-        for e in entries:
-            if e.category in ("personal", "identity") and e.status == "Current":
-                core_lines.append(f"- {e.topic}: {e.content}")
-
-        # High/Critical preferences
         pref_lines = []
+        proj_lines = []
+        rel_lines = []
+        notes_lines = []
+
         for e in entries:
-            if e.category in ("preferences",) and e.importance in ("Critical", "High") and e.status == "Current":
-                pref_lines.append(f"- {e.topic}: {e.content}")
+            if e.status != "Current":
+                continue
+            cat = e.category.lower()
+            line = f"- {e.topic}: {e.content}"
+            if cat in ("personal", "identity"):
+                core_lines.append(line)
+            elif cat in ("preferences",):
+                pref_lines.append(line)
+            elif cat in ("projects",):
+                proj_lines.append(line)
+            elif cat in ("relationships",):
+                rel_lines.append(line)
+            elif cat in ("notes", "knowledge", "wishes"):
+                notes_lines.append(line)
 
         res = []
         if core_lines:
             res.append("CORE USER IDENTITY:\n" + "\n".join(core_lines))
         if pref_lines:
             res.append("CORE PREFERENCES:\n" + "\n".join(pref_lines[:15]))
+        if proj_lines:
+            res.append("ACTIVE PROJECTS & TECH STACK:\n" + "\n".join(proj_lines[:10]))
+        if rel_lines:
+            res.append("KEY RELATIONSHIPS & PEOPLE:\n" + "\n".join(rel_lines[:10]))
+        if notes_lines:
+            res.append("SAVED NOTES & FACTS:\n" + "\n".join(notes_lines[:15]))
+
+        # Include recent conversation turns if available
+        try:
+            from memory.auto_remember import AutoRememberEngine
+            recent_conv = AutoRememberEngine.get_instance().get_recent_conversation_summary(max_turns=6)
+            if recent_conv:
+                res.append(recent_conv)
+        except Exception:
+            pass
 
         return "\n\n".join(res)
+
 
     def retrieve_context_for_prompt(
         self,
