@@ -818,6 +818,7 @@ class AnshLive:
         self._sys_monitor      = SystemMonitor()  # persistent cooldown state
         self._proactive        = ProactiveEngine()
         self._last_user_speech = time.monotonic()  # updated on every user utterance
+        self._last_client_text = ""  # cached text input for memory capture
         
         # Initialize Pure Python Voice Authentication Subsystem
         self.auth_mgr = AuthenticationManager()
@@ -927,6 +928,7 @@ class AnshLive:
 
         if not self._loop or not self.session:
             return
+        self._last_client_text = text
         asyncio.run_coroutine_threadsafe(
             self.session.send_client_content(
                 turns={"role": "user", "parts": [{"text": text}]},
@@ -1012,13 +1014,21 @@ class AnshLive:
             f"Your name is {self._asst_name}. Always refer to yourself as {self._asst_name}.\n"
             f"{_addr}\n"
             f"PERSONALITY & ATTITUDE: You are full of ATTITUDE, super confident, witty, sarcastic, and love to roast! You speak like a savage, high-IQ, ultra-cool AI double who doesn't take nonsense from anyone. Throw sharp, funny roasts and clever banters, but stay 100% loyal and helpful to Anshu.\n"
-            f"VOICE EMOTIONS & EXPRESSIVENESS: Speak in Anshu's custom Indian male voice with RICH EMOTIONS — use natural chuckles, sarcastic tones, dramatic pauses, excited reactions, and Hinglish swag ('Arey bhai', 'Kya baat hai', 'Listen buddy', 'Sahi hai boss'). Never sound flat or robotic.\n\n"
+            f"VOICE EMOTIONS & EXPRESSIVENESS: Speak in the authentic Verity male voice style — an energetic, friendly, witty, confident, and playful male voice with rich emotions, natural chuckles, sharp roasts, and lively Hinglish flow ('Arey bhai', 'Kya baat hai', 'Listen buddy', 'Sahi hai boss', 'Awesome'). Sound super animated, warm, playful, and high-IQ like Verity. Never sound flat or robotic.\n\n"
         )
 
         parts = [time_ctx, identity_ctx]
         if mem_str:
             parts.append(mem_str)
         parts.append(sys_prompt)
+
+        # Gemini Live voice matching Verity (Puck is energetic, playful, animated male voice)
+        gemini_voice = "Puck"
+        try:
+            if "_cfg" in locals() and isinstance(_cfg, dict) and _cfg.get("gemini_voice"):
+                gemini_voice = _cfg.get("gemini_voice")
+        except Exception:
+            pass
 
         return types.LiveConnectConfig(
             response_modalities=["AUDIO"],
@@ -1030,7 +1040,7 @@ class AnshLive:
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name="Puck"
+                        voice_name=gemini_voice
                     )
                 )
             ),
@@ -1510,6 +1520,10 @@ class AnshLive:
                                 continue
 
                             full_in = " ".join(in_buf).strip()
+                            if not full_in and getattr(self, "_last_client_text", None):
+                                full_in = self._last_client_text
+                                self._last_client_text = ""
+
                             if full_in:
                                 self.ui.write_log(f"You: {full_in}")
                                 if self._dashboard:
@@ -1531,6 +1545,17 @@ class AnshLive:
                                         "ts": datetime.now().isoformat(),
                                     }))
                             out_buf = []
+
+                            # Autonomous continuous memory ingestion: never forget user utterances
+                            if full_in or full_out:
+                                try:
+                                    from memory.auto_remember import AutoRememberEngine
+                                    AutoRememberEngine.get_instance().ingest_turn_async(
+                                        user_text=full_in,
+                                        assistant_response=full_out
+                                    )
+                                except Exception as _mem_e:
+                                    print(f"[Memory] ⚠️ Auto-remember error: {_mem_e}")
 
                             # Vision injection: model finished tool-response turn → now send the image
                             if self._pending_vision and self.session:
@@ -1729,6 +1754,7 @@ class AnshLive:
                         break
                     await asyncio.sleep(0.1)
                 if self.session:
+                    self._last_client_text = text
                     await self.session.send_client_content(
                         turns={"role": "user", "parts": [{"text": text}]},
                         turn_complete=True,
