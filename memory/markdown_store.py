@@ -171,10 +171,10 @@ class MarkdownStore:
         return entries
 
     def list_all_files(self) -> List[Path]:
-        """List all .md files in the storage hierarchy."""
+        """List all .md files in the storage hierarchy, ignoring episodic conversation logs."""
         if not self.root.exists():
             return []
-        return sorted(list(self.root.rglob("*.md")))
+        return sorted([f for f in self.root.rglob("*.md") if f.name.lower() not in ("conversations.md", "chat_history.md")])
 
     def load_all_entries(self) -> List[MemoryEntry]:
         """Load all memory entries from all markdown files."""
