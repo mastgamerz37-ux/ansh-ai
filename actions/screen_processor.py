@@ -17,7 +17,11 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import numpy as np
 import sounddevice as sd
 
-_CV2 = False
+try:
+    import cv2
+    _CV2 = True
+except ImportError:
+    _CV2 = False
 
 try:
     import mss
@@ -122,23 +126,60 @@ def _capture_screen() -> tuple[bytes, str]:
 
 
 def _cv2_backend() -> int:
-    return 0
+    if sys.platform == "win32" and _CV2 and hasattr(cv2, "CAP_DSHOW"):
+        return cv2.CAP_DSHOW
+    return getattr(cv2, "CAP_ANY", 0) if _CV2 else 0
 
 
-def _probe_camera(index: int, backend: int, warmup: int = 5) -> bool:
-    return False
+def _capture_camera(cam_index: int = 0) -> tuple[bytes, str]:
+    """Captures a live frame from webcam using AirTouch engine frame sharing or direct OpenCV."""
+    # 1. First priority: Grab live frame from AirTouch engine if active
+    try:
+        from core.airtouch import AirTouchEngine
+        ate = AirTouchEngine.get_instance()
+        frame = ate.get_current_frame()
+        if frame is not None and frame.size > 0:
+            if _CV2:
+                success, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                if success:
+                    return bytes(buf), "image/jpeg"
+    except Exception as e:
+        print(f"[Vision] AirTouch frame grab note: {e}")
 
+    # 2. Second priority: Direct OpenCV capture
+    if _CV2:
+        backend = _cv2_backend()
+        cap = cv2.VideoCapture(cam_index, backend)
+        if cap and cap.isOpened():
+            try:
+                # 2 warmup frames to let exposure/white-balance stabilize
+                cap.read()
+                cap.read()
+                ret, frame = cap.read()
+                if ret and frame is not None and frame.size > 0:
+                    success, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                    if success:
+                        return bytes(buf), "image/jpeg"
+            finally:
+                cap.release()
 
-def _detect_camera_index() -> int:
-    return 0
+    # 3. Third priority: If camera index 0 failed, try index 1
+    if _CV2 and cam_index == 0:
+        backend = _cv2_backend()
+        cap = cv2.VideoCapture(1, backend)
+        if cap and cap.isOpened():
+            try:
+                cap.read()
+                ret, frame = cap.read()
+                if ret and frame is not None and frame.size > 0:
+                    success, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                    if success:
+                        return bytes(buf), "image/jpeg"
+            finally:
+                cap.release()
 
+    raise RuntimeError("Camera capture failed: Unable to read frame from webcam. Please check if camera is connected and permissions are granted.")
 
-def _get_camera_index() -> int:
-    return 0
-
-
-def _capture_camera() -> tuple[bytes, str]:
-    raise RuntimeError("Camera capture is currently disabled as OpenCV dependency has been removed.")
 
 class _VisionSession:
     def __init__(self):
@@ -382,6 +423,48 @@ def warmup_session(player=None) -> None:
         _ensure_session(player=player)
     except Exception as e:
         print(f"[Vision] ⚠️  Warmup failed: {e}")
+
+
+def detect_screen_change(img1_bytes: bytes, img2_bytes: bytes, threshold: float = 0.05) -> bool:
+    """Calculates downscaled difference ratio between two image byte buffers."""
+    if not _PIL:
+        return True
+    try:
+        im1 = PIL.Image.open(io.BytesIO(img1_bytes)).convert("L").resize((64, 64))
+        im2 = PIL.Image.open(io.BytesIO(img2_bytes)).convert("L").resize((64, 64))
+        arr1 = np.asarray(im1, dtype=np.float32)
+        arr2 = np.asarray(im2, dtype=np.float32)
+        diff = float(np.mean(np.abs(arr1 - arr2)) / 255.0)
+        return diff >= threshold
+    except Exception:
+        return True
+
+
+def detect_sensitive_screen(ocr_text: str) -> bool:
+    """Identifies sensitive screen content (passwords, OTPs, credit cards, bank credentials)."""
+    if not ocr_text:
+        return False
+    low = ocr_text.lower()
+    sensitive_keywords = (
+        "cvv", "card number", "password", "pin", "otp", "routing number",
+        "secret key", "api_key", "private key", "seed phrase", "two-factor",
+        "passcode", "credit card", "net banking", "login password"
+    )
+    return any(k in low for k in sensitive_keywords)
+
+
+def compare_screenshots(img1_bytes: bytes, img2_bytes: bytes) -> str:
+    """Uses Gemini multimodal model to compare two screenshots and explain visual differences."""
+    from core.task_llm import get_task_llm
+    prompt = [
+        "Compare these two screen states. Describe what changed between state 1 and state 2 "
+        "(e.g., opened windows, new popups, error dialogs, edited text, UI state changes).",
+        {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(img1_bytes).decode()}},
+        {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(img2_bytes).decode()}},
+    ]
+    llm = get_task_llm()
+    res = llm.generate_content(prompt)
+    return res.text
 
 if __name__ == "__main__":
     print("[TEST] screen_processor.py")
