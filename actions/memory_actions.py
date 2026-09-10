@@ -53,7 +53,7 @@ def search_memory_action(
     speak=None,
 ) -> str:
     """
-    Handles searching long-term memory.
+    Handles searching long-term memory across structured categories and conversation logs.
     """
     params = parameters or {}
     query = params.get("query") or params.get("topic") or params.get("question") or ""
@@ -69,14 +69,30 @@ def search_memory_action(
     svc = MemoryService.get_instance()
     results = svc.search_memories(query=query, category=category, limit=limit)
 
-    if not results:
-        return f"No memories found matching '{query}'."
+    lines = []
+    if results:
+        lines.append(f"Found {len(results)} relevant structured memories:")
+        for sm in results:
+            e = sm.entry
+            note_str = f" [History: {e.notes}]" if e.notes else ""
+            lines.append(f"• [{e.category.title()}] {e.topic} ({e.importance}): {e.content}{note_str}")
 
-    lines = [f"Found {len(results)} relevant memories:"]
-    for sm in results:
-        e = sm.entry
-        note_str = f" [History: {e.notes}]" if e.notes else ""
-        lines.append(f"• [{e.category.title()}] {e.topic} ({e.importance}): {e.content}{note_str}")
+    # Also search recent conversational dialogue for informal user statements
+    try:
+        from memory.auto_remember import AutoRememberEngine
+        conv_matches = AutoRememberEngine.get_instance().search_conversation_history(query=query, limit=3)
+        if conv_matches:
+            lines.append("\nRelevant Past Conversation Dialogue:")
+            for c in conv_matches:
+                spk = c.get("speaker", "user").title()
+                txt = c.get("text", "")
+                ts = c.get("timestamp", "")
+                lines.append(f"• [{ts}] {spk}: \"{txt}\"")
+    except Exception:
+        pass
+
+    if not lines:
+        return f"No memories or past conversation found matching '{query}'."
 
     return "\n".join(lines)
 
