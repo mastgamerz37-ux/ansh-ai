@@ -41,6 +41,13 @@
       "object": "Rohan",
       "confidence": 1.0,
       "created_at": 1789039263.2663167
+    },
+    {
+      "subject": "User",
+      "predicate": "mere papa",
+      "object": "Bethe",
+      "confidence": 1.0,
+      "created_at": 1789127931.768808
     }
   ]
 }
