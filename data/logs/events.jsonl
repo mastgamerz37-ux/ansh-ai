@@ -1,3 +1,10 @@
 {"type": "mode_changed", "source": "core", "timestamp": 1789037153.0613477, "time": "16:15:53", "payload": {"mode": "DEVELOPER"}}
 {"type": "mode_changed", "source": "core", "timestamp": 1789037671.9597151, "time": "16:24:31", "payload": {"mode": "DEVELOPER"}}
 {"type": "mode_changed", "source": "core", "timestamp": 1789039284.2180223, "time": "16:51:24", "payload": {"mode": "DEVELOPER"}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127839.0074222, "time": "17:27:19", "payload": {"user_text": "dal makhani and sikka", "facts_extracted": 0}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127896.423462, "time": "17:28:16", "payload": {"user_text": "dal hai", "facts_extracted": 0}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127911.4742482, "time": "17:28:31", "payload": {"user_text": "koi daal nahi hai", "facts_extracted": 0}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127920.7993848, "time": "17:28:40", "payload": {"user_text": "\u092e\u091a\u0921\u093c\u093e\u0913\u0964", "facts_extracted": 0}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127931.7702389, "time": "17:28:51", "payload": {"user_text": "mere papa bethe sun rahe han", "facts_extracted": 1}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127947.158383, "time": "17:29:07", "payload": {"user_text": "repeat it", "facts_extracted": 0}}
+{"type": "voice_input", "source": "auto_remember", "timestamp": 1789127963.0650265, "time": "17:29:23", "payload": {"user_text": "Tom and Jerry", "facts_extracted": 0}}
