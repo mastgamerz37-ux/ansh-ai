@@ -3649,13 +3649,13 @@ class AnshUI:
         info_lbl.setWordWrap(True)
         layout.addWidget(info_lbl)
 
-        buy_btn = QPushButton("🌐 Get Product Key (https://getyoursoft.page.gd)")
+        buy_btn = QPushButton("🌐 Get Product Key / Free Trial (https://getyoursoft.vercel.app)")
         buy_btn.setObjectName("btn_buy")
-        buy_btn.clicked.connect(lambda: webbrowser.open("https://getyoursoft.page.gd"))
+        buy_btn.clicked.connect(lambda: webbrowser.open("https://getyoursoft.vercel.app/signin.html"))
         layout.addWidget(buy_btn)
 
         key_input = QLineEdit()
-        key_input.setPlaceholderText("Enter Key: ANSH-XXXX-XXXX-XXXX")
+        key_input.setPlaceholderText("Enter Key: ANSH-TRAL-XXXX-XXXX or ANSH-XXXX-XXXX-XXXX")
         layout.addWidget(key_input)
 
         status_lbl = QLabel("")
