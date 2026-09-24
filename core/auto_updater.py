@@ -1,6 +1,6 @@
 """
 core/auto_updater.py - Pure Python Automatic GitHub Updater for ANSH
-Author: Anshu Dubey | https://getyoursoft.page.gd
+Author: Anshu Dubey | https://getyoursoft.vercel.app
 
 Automatically checks GitHub repository (mastgamerz37-ux/ansh-ai) for new commits and updates local files seamlessly without git dependency.
 """
@@ -16,15 +16,23 @@ import threading
 from pathlib import Path
 from typing import Callable, Optional
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
+
 REPO_OWNER = "mastgamerz37-ux"
 REPO_NAME = "ansh-ai"
 BRANCH = "main"
 
 # Files and folders that should NEVER be overwritten during an auto-update
 EXCLUDED_PATTERNS = {
-    "keys", "api_keys.json", "license.json", "data/secure", "venv", ".venv",
-    "build", "dist", "release", "release_app", "__pycache__", ".git", ".vscode",
-    "scratch", "uploads"
+    "keys", "keys.txt", "api_keys.json", "license.json", ".license", ".env", "core/.env",
+    "data/secure", "data/voice_samples", "data/shadow_backups", "data/logs",
+    "venv", ".venv", "build", "dist", "release", "release_app", "__pycache__",
+    ".git", ".vscode", "scratch", "uploads", "memory", "storage",
+    "conversations.md", "conversations.jsonl", "install.ps1", "update.ps1", "certs"
 }
 
 
@@ -37,8 +45,13 @@ def _get_base_dir() -> Path:
 def _should_skip(rel_path: str) -> bool:
     normalized = rel_path.replace("\\", "/").strip("/")
     parts = normalized.split("/")
+    filename = parts[-1]
+
+    if filename.endswith(".env") or filename == ".env":
+        return True
+
     for p in parts:
-        if p in EXCLUDED_PATTERNS or p.endswith(".pyc") or p.endswith(".log"):
+        if p in EXCLUDED_PATTERNS or p.endswith(".pyc") or p.endswith(".log") or p.endswith(".jsonl") or p.endswith(".key") or p.endswith(".crt"):
             return True
     return False
 
