@@ -2,7 +2,7 @@
 ### Your Step-by-Step Manual for Everyday Voice Interaction, Desktop Automation & System Mastery
 **Product:** ANSH — Your Own AI Friend  
 **Developer:** **Anshu Dubey**  
-**Official Activation & Key Portal:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)  
+**Official Activation & Key Portal:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)  
 **Source Repository:** [https://github.com/mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)  
 
 ---
@@ -243,7 +243,7 @@ Located in `data/study/`, ANSH includes built-in learning assistance:
         [Product Activation Dialog Appears]
                          │
                          ▼
-[Click "Get Product Key" ──► https://getyoursoft.page.gd]
+[Click "Get Product Key" ──► https://getyoursoft.vercel.app]
        │                                     │
        ▼                                     ▼
  [Monthly Plan: ₹199/mo]          [Lifetime Pro: ₹999/once]
@@ -256,7 +256,7 @@ Located in `data/study/`, ANSH includes built-in learning assistance:
 
 ### Where to Obtain a Product Key
 1. Visit the official commercial licensing portal:  
-   👉 **[https://getyoursoft.page.gd](https://getyoursoft.page.gd)**
+   👉 **[https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)**
 2. Select your preferred tier:
    - **Monthly Subscription (₹199 / 30-Day Pass):** Keys start with `ANSH-M-XXXX-XXXX-XXXX`.
    - **Lifetime Perpetual (₹999 / One-Time):** Keys start with `ANSH-L-XXXX-XXXX-XXXX`.
@@ -302,5 +302,5 @@ Located in `data/study/`, ANSH includes built-in learning assistance:
 ## 12. Support & Contact
 
 - **Lead Architect & Developer:** **Anshu Dubey**
-- **Commercial Licensing & Activation Portal:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Commercial Licensing & Activation Portal:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 - **GitHub Repository:** [https://github.com/mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
