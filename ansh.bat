@@ -3,63 +3,75 @@ setlocal EnableDelayedExpansion
 
 :: Check arguments
 if "%1"=="" goto help
-if "%1"=="install" goto install
-if "%1"=="dev" goto dev
-if "%1"=="start" goto start
+if /i "%1"=="install" goto install
+if /i "%1"=="dev" goto dev
+if /i "%1"=="start" goto start
+if /i "%1"=="update" goto update
+if /i "%1"=="status" goto status
+if /i "%1"=="keys" goto keys
+if /i "%1"=="help" goto help
+if /i "%1"=="-h" goto help
+if /i "%1"=="--help" goto help
 goto help
 
 :install
-echo [ANSH] Checking Python...
-py --version >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    python --version >nul 2>&1
-    if !ERRORLEVEL! NEQ 0 (
-        echo [ANSH] Python is missing! Installing automatically...
-        winget install -e --id Python.Python.3.12 --accept-source-agreements --accept-package-agreements
-    )
-)
+powershell -ExecutionPolicy Bypass -File "%~dp0install.ps1"
+exit /b %ERRORLEVEL%
 
-echo [ANSH] Creating Environment...
+:update
+echo [ANSH] Checking for latest updates from GitHub...
+powershell -ExecutionPolicy Bypass -File "%~dp0update.ps1"
+exit /b %ERRORLEVEL%
+
+:status
 if not exist venv (
-    py -m venv venv >nul 2>&1 || python -m venv venv
+    echo [ANSH] Environment not found! Run "ansh install" first.
+    exit /b 1
 )
-
-echo [ANSH] Installing Dependencies...
 call venv\Scripts\activate.bat
-python -m pip install --upgrade pip --quiet
-pip install -r requirements.txt
-echo [ANSH] Install Complete! Starting Ansh...
-goto start
+python setup_keys.py --status
+exit /b 0
+
+:keys
+if not exist venv (
+    echo [ANSH] Environment not found! Run "ansh install" first.
+    exit /b 1
+)
+call venv\Scripts\activate.bat
+python setup_keys.py %2 %3 %4 %5
+exit /b %ERRORLEVEL%
 
 :dev
 echo [ANSH] Starting Developer Mode...
 if not exist venv (
     echo [ANSH] Environment not found! Run "ansh install" first.
-    exit /b
+    exit /b 1
 )
 call venv\Scripts\activate.bat
 python main.py
-exit /b
+exit /b %ERRORLEVEL%
 
 :start
 echo [ANSH] Starting Ansh AI in background...
 if not exist venv (
     echo [ANSH] Environment not found! Run "ansh install" first.
-    exit /b
+    exit /b 1
 )
 call venv\Scripts\activate.bat
-start pythonw main.py
-exit /b
+start "" pythonw main.py
+exit /b 0
 
 :help
 echo.
-echo =========================================
-echo         ANSH AI COMMAND LINE TOOL
-echo =========================================
-echo Usage: 
-echo   ansh install   - Automatically sets up Python and installs all files/libraries
-echo   ansh dev       - Starts Ansh with console output (like npm run dev)
-echo   ansh start     - Starts Ansh silently in the background (no black window)
-echo =========================================
+echo ==============================================================
+echo         ANSH - Your Own AI Friend — Command Line Tool
+echo ==============================================================
+echo   ansh install   - Automatically sets up Python, venv, shortcuts, and global command
+echo   ansh dev       - Starts Ansh in developer mode with live terminal logs
+echo   ansh start     - Starts Ansh silently in the background
+echo   ansh update    - Safely syncs latest code from GitHub (keeps your keys and memory safe)
+echo   ansh status    - Shows current license status and API key diagnostics
+echo   ansh keys      - Configures API keys or activates product keys
+echo ==============================================================
 echo.
-exit /b
+exit /b 0
