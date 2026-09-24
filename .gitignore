@@ -20,14 +20,41 @@ env/
 ENV/
 .venv/
 
-# Private Product Key Generator & Plaintext Keys (DO NOT UPLOAD)
+# Environment Variables & Secrets (NEVER COMMIT)
+*.env
+core/.env
+!core/.env.example
+config/api_keys.json
+config/license.json
+.license
+
+# Private Keys, Generators & Plaintext Keys
+keys.txt
 keys/product_keys.txt
 keys/generate_keys.py
+validation.json
 
-# Local User Secrets & Temporary Data
+# SSL Certificates & Encryption Keys
+config/certs/
+*.key
+*.crt
+*.pem
+
+# Biometric & Sensitive User Data
+data/secure/
+data/voice_samples/
+data/shadow_backups/
+data/logs/
+memory/storage/
+*.wav
+*.npz
+*.jsonl
+*.log
+
+# Local User Scratch & Temporary Files
 scratch/
-config/license.json
-config/api_keys.json
+Untitled*
+uploads/
 
 # IDEs and Editors
 .vscode/
@@ -35,6 +62,7 @@ config/api_keys.json
 *.swp
 *.swo
 
-# OS Files
+# OS Generated Files
 .DS_Store
 Thumbs.db
+desktop.ini
