@@ -1,5 +1,5 @@
 # ANSH — Your Own AI Friend: Complete Documentation
-### Developer: Anshu Dubey | Product Website: https://getyoursoft.page.gd
+### Developer: Anshu Dubey | Product Website: https://getyoursoft.vercel.app
 
 ---
 
@@ -19,7 +19,7 @@ ANSH includes a built-in commercial licensing and trial management system ([`cor
 
 ### 2. Product Key Activation
 - Once the 3-day trial expires, ANSH locks full application access and opens the **Product Activation Dialog**.
-- Users can click **"Get Product Key"** to visit [https://getyoursoft.page.gd](https://getyoursoft.page.gd) to purchase or request an activation key.
+- Users can click **"Get Product Key"** to visit [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app) to purchase or request an activation key.
 - Product keys follow the format: `ANSH-XXXX-XXXX-XXXX`.
 
 ---
@@ -79,4 +79,4 @@ Any code changes made in `main.py`, `core/`, `actions/`, `memory/`, or `ui.py` a
 ## 👤 Developer & Support
 
 - **Developer**: **Anshu Dubey**
-- **Activation & Keys Website**: [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Activation & Keys Website**: [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
