@@ -3,7 +3,7 @@
 **Last Updated:** September 11, 2026  
 **Product:** ANSH — Your Own AI Friend  
 **Developer & Copyright Holder:** Anshu Dubey  
-**Official Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)  
+**Official Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)  
 
 ---
 
@@ -92,5 +92,5 @@ We may update this Privacy Policy from time to time to reflect software updates,
 If you have any questions, privacy concerns, or data requests regarding ANSH, please contact:
 
 - **Developer:** Anshu Dubey
-- **Product & Activation Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Product & Activation Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 - **Repository:** [https://github.com/mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
