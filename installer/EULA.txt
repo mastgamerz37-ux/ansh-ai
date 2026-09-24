@@ -1,13 +1,13 @@
 END-USER LICENSE AGREEMENT (EULA) FOR ANSH — YOUR OWN AI FRIEND
 Developer & Copyright Owner: Anshu Dubey
-Product Activation Website: https://getyoursoft.page.gd
+Product Activation Website: https://getyoursoft.vercel.app
 
 IMPORTANT — READ CAREFULLY:
 This End-User License Agreement ("EULA") is a legal agreement between you ("Licensee" or "User") and Anshu Dubey ("Developer") for the software product titled "ANSH - Your Own AI Friend" ("Software"), including associated media, printed materials, and online documentation.
 
 1. GRANT OF LICENSE & FREE TRIAL
 - Free Trial Period: Upon initial installation and launch, Developer grants Licensee a limited, non-exclusive, 3-day (72 hours) free trial to evaluate the Software.
-- Product Activation: Following the 3-day trial period, continued operation requires a valid Product Activation Key ("Key") obtained via https://getyoursoft.page.gd.
+- Product Activation: Following the 3-day trial period, continued operation requires a valid Product Activation Key ("Key") obtained via https://getyoursoft.vercel.app.
 - License Restrictions: You may not reverse engineer, decompile, or disassemble the Software, except to the extent that such activity is expressly permitted by applicable law.
 
 2. INTELLECTUAL PROPERTY RIGHTS
@@ -18,6 +18,6 @@ The Software is provided "AS IS", without warranty of any kind, express or impli
 
 4. SUPPORT & CONTACT
 For license support, key activations, or inquiries, visit:
-https://getyoursoft.page.gd
+https://getyoursoft.vercel.app
 
 By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this EULA.
