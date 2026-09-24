@@ -3,7 +3,7 @@
 **Last Updated:** September 11, 2026  
 **Product:** ANSH — Your Own AI Friend  
 **Developer:** Anshu Dubey  
-**Official Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)  
+**Official Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)  
 
 ---
 
@@ -24,7 +24,7 @@ Every user receives an unrestricted **3-day (72 hours) free trial** upon initial
 We consider refund requests under the following legitimate conditions:
 
 ### 2.1 Technical Non-Delivery of Activation Key
-- If you made a verified payment on our licensing portal ([https://getyoursoft.page.gd](https://getyoursoft.page.gd)) and did not receive your product key within twenty-four (24) hours due to a technical server error, and our support team is unable to manually deliver your key upon inquiry.
+- If you made a verified payment on our licensing portal ([https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)) and did not receive your product key within twenty-four (24) hours due to a technical server error, and our support team is unable to manually deliver your key upon inquiry.
 
 ### 2.2 Verified Defective or Inactive Product Key
 - If your newly purchased product activation key fails to validate against the official license activation protocol and our technical support team cannot resolve or replace the key within forty-eight (48) hours of your initial support ticket.
@@ -50,7 +50,7 @@ Refunds will **not** be granted under the following scenarios:
 
 - **Timeframe:** All eligible refund requests must be submitted within **seven (7) calendar days** of the original purchase date.
 - **How to Submit a Request:**
-  1. Visit our official support portal at [https://getyoursoft.page.gd](https://getyoursoft.page.gd).
+  1. Visit our official support portal at [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app).
   2. Provide your:
      - Full Name
      - Email address used during purchase
@@ -66,7 +66,7 @@ Refunds will **not** be granted under the following scenarios:
 
 ## 5. Chargebacks & Dispute Resolution
 
-We kindly request that you contact our support desk at [https://getyoursoft.page.gd](https://getyoursoft.page.gd) before filing a payment dispute or chargeback with your bank or credit card provider. Most activation, key delivery, or configuration issues can be resolved rapidly and cordially. Fraudulent chargebacks filed while continuing to utilize an active product key will result in immediate license termination and permanent account blacklisting.
+We kindly request that you contact our support desk at [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app) before filing a payment dispute or chargeback with your bank or credit card provider. Most activation, key delivery, or configuration issues can be resolved rapidly and cordially. Fraudulent chargebacks filed while continuing to utilize an active product key will result in immediate license termination and permanent account blacklisting.
 
 ---
 
@@ -75,5 +75,5 @@ We kindly request that you contact our support desk at [https://getyoursoft.page
 For all refund requests, key inquiries, or billing assistance:
 
 - **Developer:** Anshu Dubey
-- **Official Licensing Portal:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Official Licensing Portal:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 - **Project Repository:** [https://github.com/mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
