@@ -1,10 +1,10 @@
 ; installer/setup.iss — Legal Inno Setup Script for ANSH - Your Own AI Friend
-; Created & Engineered by Anshu Dubey | https://getyoursoft.page.gd
+; Created & Engineered by Anshu Dubey | https://getyoursoft.vercel.app
 
 #define MyAppName "ANSH - Your Own AI Friend"
 #define MyAppVersion "1.0.0"
 #define MyAppPublisher "Anshu Dubey"
-#define MyAppURL "https://getyoursoft.page.gd"
+#define MyAppURL "https://getyoursoft.vercel.app"
 #define MyAppExeName "ansh.exe"
 
 [Setup]
