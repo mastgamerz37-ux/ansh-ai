@@ -65,7 +65,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://getyoursoft.page.gd"
+Homepage = "https://getyoursoft.vercel.app"
 Repository = "https://github.com/mastgamerz37-ux/ansh-ai"
 
 [project.scripts]
