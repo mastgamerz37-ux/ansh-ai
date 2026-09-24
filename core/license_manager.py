@@ -121,7 +121,15 @@ class LicenseManager:
         """
         lic = self._load_license()
         if lic.get("activated", False):
-            return True, float("inf"), "Activated Product Key"
+            expires_at = lic.get("expires_at")
+            if expires_at:
+                remaining = expires_at - time.time()
+                if remaining <= 0:
+                    return False, 0.0, "Monthly Subscription Expired"
+                days = int(remaining // 86400)
+                hours = int((remaining % 86400) // 3600)
+                return True, remaining, f"Active ({days}d {hours}h left)"
+            return True, float("inf"), "Activated Product Key (Lifetime)"
 
         trial_exp = lic.get("trial_expires_at")
         if trial_exp:
@@ -151,6 +159,9 @@ class LicenseManager:
         """
         lic = self._load_license()
         if lic.get("activated", False):
+            expires_at = lic.get("expires_at")
+            if expires_at and time.time() > expires_at:
+                return False
             return True
 
         is_active, _, _ = self.get_trial_status()
@@ -202,15 +213,24 @@ class LicenseManager:
         # Step 1: Instant local hash check (offline fast path for pre-generated keys)
         valid_hashes = self._load_valid_hashes()
         if key_hash in valid_hashes:
+            meta = valid_hashes[key_hash] if isinstance(valid_hashes[key_hash], dict) else {}
+            plan_name = meta.get("plan", "Commercial License")
+            duration_days = meta.get("duration_days")
+
             lic = self._load_license()
             lic["activated"] = True
             lic["activated_key"] = cleaned_key
             lic["activated_key_hash"] = key_hash
             lic["activation_date"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            lic["plan"] = "Commercial License"
+            lic["plan"] = plan_name
+            if duration_days and duration_days < 3650:
+                lic["expires_at"] = time.time() + (duration_days * 86400)
+            else:
+                lic.pop("expires_at", None)
+
             self._save_license(lic)
-            print(f"[LicenseManager] Product key activated locally via hash: {key_hash[:12]}...")
-            return True, "Product key activated successfully! Full access unlocked."
+            print(f"[LicenseManager] Product key activated locally via hash: {key_hash[:12]}... (Plan: {plan_name})")
+            return True, f"Product key activated successfully! {plan_name} unlocked."
 
         # Step 2: Live Cloud Verification via GetYourSoft API
         online_success, res_data = self._verify_online(cleaned_key, machine_id)
