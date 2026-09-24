@@ -3626,7 +3626,7 @@ class AnshUI:
         self._win._reconfig_sig.emit()
 
     def prompt_activation(self, license_mgr):
-        """Prompt user for Product Activation Key with redirect link to https://getyoursoft.page.gd."""
+        """Prompt user for Product Activation Key with redirect link to https://getyoursoft.vercel.app."""
         dlg = QDialog(self._win)
         dlg.setWindowTitle("ANSH - Product Activation Required")
         dlg.setFixedSize(480, 260)
