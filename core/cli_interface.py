@@ -1,6 +1,6 @@
 """
 core/cli_interface.py - Claude & Gemini Style Large Terminal Interface for ANSH
-Author: Anshu Dubey | https://getyoursoft.page.gd
+Author: Anshu Dubey | https://getyoursoft.vercel.app
 
 Renders a premium terminal banner with large ASCII logo, auto-updater status,
 and interactively prompts for API keys, nickname, and product key if missing.
@@ -53,7 +53,7 @@ def print_cli_banner() -> None:
   ██╔══██╗████╗  ██║██╔════╝██║  ██║   {GREEN}ANSH AI — Your Own AI Friend{CYAN}
   ███████║██╔██╗ ██║███████╗███████║   {YELLOW}v1.0.0 (Production Release){CYAN}
   ██╔══██║██║╚██╗██║╚════██║██╔══██║   Developer: {YELLOW}Anshu Dubey{CYAN}
-  ██║  ██║██║ ╚████║███████║██║  ██║   Website: {YELLOW}https://getyoursoft.page.gd{CYAN}
+  ██║  ██║██║ ╚████║███████║██║  ██║   Website: {YELLOW}https://getyoursoft.vercel.app{CYAN}
   ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝   Platform: {BLUE}{os_name} (Python {python_ver}){CYAN}
 ===============================================================================
 {RESET}{DIM}  Autonomous Multimodal Voice Assistant • HUD Interface • Real-Time AI Engine{RESET}
@@ -65,7 +65,7 @@ def print_cli_banner() -> None:
         plain_banner = (
             "===============================================================================\n"
             "  A N S H   A I - Your Own AI Friend (v1.0.0 Production Release)\n"
-            "  Developer: Anshu Dubey | Website: https://getyoursoft.page.gd\n"
+            "  Developer: Anshu Dubey | Website: https://getyoursoft.vercel.app\n"
             f"  Platform:  {os_name} (Python {python_ver})\n"
             "  Auto-Sync: Enabled (GitHub @ mastgamerz37-ux/ansh-ai)\n"
             "==============================================================================="
@@ -144,7 +144,7 @@ def ensure_terminal_credentials() -> None:
             print(f"{GREEN}✓ License Status:{RESET} {YELLOW}3-Day Free Trial Active ({time_left}){RESET}")
         else:
             print(f"\n{RED}{BOLD}⚠️ [TRIAL EXPIRED] Your 3-Day Free Trial Has Expired!{RESET}")
-            print(f"{DIM}To continue using ANSH, get a Product Activation Key at: https://getyoursoft.page.gd{RESET}\n")
+            print(f"{DIM}To continue using ANSH, get a Product Activation Key at: https://getyoursoft.vercel.app{RESET}\n")
             while True:
                 pk_input = input(f"{CYAN}{BOLD}Enter Product Activation Key (ANSH-XXXX-XXXX-XXXX): {RESET}").strip()
                 success, msg = lic_mgr.activate_product_key(pk_input)
