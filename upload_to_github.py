@@ -1,23 +1,35 @@
 """
-upload_to_github.py — Pure Python GitHub Repository Synchronizer for ANSH
-Created & Developed by Anshu Dubey
+upload_to_github.py — High-Performance Pure Python GitHub Repository Synchronizer for ANSH
+Created & Developed by Anshu Dubey | https://getyoursoft.vercel.app
 
 Features:
-- Pure Python using GitHub REST API v3 (no Git installation required).
-- Uploads and updates all clean source code, documentation, assets, and configs.
-- Automatically creates repository on GitHub if it doesn't already exist.
-- Strictly ignores private keys, generators, user configs, credentials, and build binaries.
+- Uses requests.Session for connection reuse (eliminates WinError 10060 socket timeouts).
+- Pre-fetches remote Git tree in 1 single call to compare SHAs: skips identical files instantly.
+- Automatic retry on network hiccups or timeouts (up to 3 attempts with backoff).
+- Automatically purges sensitive/ignored files on GitHub if previously uploaded.
+- Strictly protects all private keys, credentials, local databases, and biometrics.
 """
 from __future__ import annotations
 
 import os
 import sys
 import json
+import time
 import base64
-import urllib.request
-import urllib.error
+import hashlib
 from pathlib import Path
+import requests
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 REPO_OWNER = "mastgamerz37-ux"
 REPO_NAME = "ansh-ai"
@@ -107,13 +119,17 @@ def should_ignore(rel_path: str) -> bool:
     return False
 
 
+def git_blob_sha(content_bytes: bytes) -> str:
+    """Calculates standard Git Blob SHA-1."""
+    header = f"blob {len(content_bytes)}\0".encode("utf-8")
+    return hashlib.sha1(header + content_bytes).hexdigest()
+
 
 def get_all_files(base_dir: Path) -> list[Path]:
     file_list: list[Path] = []
     for root, dirs, files in os.walk(base_dir):
-        # Prune ignored directory traversal
         dirs[:] = [
-            d for d in dirs 
+            d for d in dirs
             if not should_ignore(str(Path(root, d).relative_to(base_dir)))
         ]
         for file in files:
@@ -124,24 +140,14 @@ def get_all_files(base_dir: Path) -> list[Path]:
     return file_list
 
 
-def ensure_repo_exists(token: str) -> bool:
-    """Verifies that the repository exists on GitHub, creates it if missing."""
+def ensure_repo_exists(session: requests.Session, token: str) -> bool:
     check_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
-    req = urllib.request.Request(
-        check_url,
-        headers={
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "ANSH-Uploader"
-        }
-    )
     try:
-        with urllib.request.urlopen(req) as resp:
-            if resp.status == 200:
-                return True
-    except urllib.error.HTTPError as he:
-        if he.code == 404:
-            print(f"📦 Repository '{REPO_OWNER}/{REPO_NAME}' not found on GitHub. Creating it now...")
+        resp = session.get(check_url, timeout=15)
+        if resp.status_code == 200:
+            return True
+        if resp.status_code == 404:
+            print(f"📦 Repository '{REPO_OWNER}/{REPO_NAME}' not found. Creating it on GitHub...")
             create_url = "https://api.github.com/user/repos"
             payload = {
                 "name": REPO_NAME,
@@ -149,35 +155,66 @@ def ensure_repo_exists(token: str) -> bool:
                 "private": False,
                 "auto_init": True
             }
-            create_req = urllib.request.Request(
-                create_url,
-                data=json.dumps(payload).encode("utf-8"),
-                headers={
-                    "Authorization": f"token {token}",
-                    "Accept": "application/vnd.github.v3+json",
-                    "Content-Type": "application/json",
-                    "User-Agent": "ANSH-Uploader"
-                },
-                method="POST"
-            )
-            try:
-                with urllib.request.urlopen(create_req) as create_resp:
-                    if create_resp.status in (200, 201):
-                        print(f"✅ Successfully created repository '{REPO_OWNER}/{REPO_NAME}'!")
-                        return True
-            except Exception as e:
-                print(f"❌ Failed to automatically create repo: {e}")
-                return False
-        else:
-            print(f"❌ GitHub API Error: {he.code} {he.reason}")
+            c_resp = session.post(create_url, json=payload, timeout=20)
+            if c_resp.status_code in (200, 201):
+                print(f"✅ Successfully created repository '{REPO_OWNER}/{REPO_NAME}'!")
+                return True
+            print(f"❌ Failed to create repo: {c_resp.status_code} {c_resp.text}")
             return False
+        print(f"❌ GitHub API Error: {resp.status_code} {resp.text}")
+        return False
     except Exception as ex:
         print(f"❌ Connection error: {ex}")
         return False
-    return True
 
 
-def upload_file_to_github(token: str, base_dir: Path, file_path: Path) -> bool:
+def get_remote_tree(session: requests.Session) -> dict[str, str]:
+    """Fetches dictionary of {remote_path: sha} in a single HTTP call."""
+    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/git/trees/{BRANCH}?recursive=1"
+    try:
+        resp = session.get(url, timeout=20)
+        if resp.status_code == 200:
+            tree = resp.json().get("tree", [])
+            return {item["path"]: item["sha"] for item in tree if item["type"] == "blob"}
+    except Exception as e:
+        print(f"[Warn] Could not fetch remote tree: {e}")
+    return {}
+
+
+def purge_remote_sensitive_files(session: requests.Session, remote_tree: dict[str, str]) -> int:
+    """Detects and deletes any sensitive or unwanted files that exist on GitHub."""
+    to_delete = {path: sha for path, sha in remote_tree.items() if should_ignore(path)}
+    if not to_delete:
+        return 0
+
+    print(f"\n🛡️  Cleaning up {len(to_delete)} sensitive/unwanted files from GitHub repository...")
+    deleted_count = 0
+    for path, sha in to_delete.items():
+        del_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}"
+        payload = {
+            "message": f"Security: remove sensitive file {path}",
+            "sha": sha,
+            "branch": BRANCH
+        }
+        for attempt in range(3):
+            try:
+                resp = session.delete(del_url, json=payload, timeout=20)
+                if resp.status_code in (200, 204):
+                    print(f"  🗑️  Purged from GitHub: {path}")
+                    deleted_count += 1
+                    break
+                time.sleep(1)
+            except Exception:
+                time.sleep(2)
+    return deleted_count
+
+
+def upload_file_to_github(
+    session: requests.Session,
+    base_dir: Path,
+    file_path: Path,
+    existing_sha: str | None = None
+) -> bool:
     rel_path = str(file_path.relative_to(base_dir)).replace("\\", "/")
     url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{rel_path}"
 
@@ -188,51 +225,37 @@ def upload_file_to_github(token: str, base_dir: Path, file_path: Path) -> bool:
         print(f"❌ Failed to read {rel_path}: {e}")
         return False
 
-    # Check if file exists to fetch sha for update
-    sha = None
-    req_check = urllib.request.Request(
-        url,
-        headers={
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "ANSH-Uploader"
-        }
-    )
-    try:
-        with urllib.request.urlopen(req_check) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            sha = data.get("sha")
-    except urllib.error.HTTPError:
-        pass
-
     payload = {
-        "message": f"Release v1.0.0: update {rel_path}",
+        "message": f"Sync: update {rel_path}",
         "content": encoded_content,
         "branch": BRANCH
     }
-    if sha:
-        payload["sha"] = sha
+    if existing_sha:
+        payload["sha"] = existing_sha
 
-    req_upload = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github.v3+json",
-            "Content-Type": "application/json",
-            "User-Agent": "ANSH-Uploader"
-        },
-        method="PUT"
-    )
-
-    try:
-        with urllib.request.urlopen(req_upload) as resp:
-            if resp.status in (200, 201):
+    # Retry up to 3 times on connection hiccup or timeout
+    for attempt in range(1, 4):
+        try:
+            resp = session.put(url, json=payload, timeout=30)
+            if resp.status_code in (200, 201):
                 return True
-    except urllib.error.HTTPError as he:
-        print(f"❌ Error uploading {rel_path}: {he.code} {he.reason}")
-    except Exception as ex:
-        print(f"❌ Error uploading {rel_path}: {ex}")
+            if resp.status_code == 409:
+                # SHA conflict: re-fetch SHA and retry once
+                check = session.get(url, timeout=15)
+                if check.status_code == 200:
+                    payload["sha"] = check.json().get("sha")
+                    retry_resp = session.put(url, json=payload, timeout=30)
+                    if retry_resp.status_code in (200, 201):
+                        return True
+            print(f"❌ HTTP {resp.status_code} ({resp.reason}) on attempt {attempt}")
+        except (requests.Timeout, requests.ConnectionError) as net_err:
+            if attempt < 3:
+                time.sleep(2 * attempt)
+            else:
+                print(f"❌ Network timeout on {rel_path}: {net_err}")
+        except Exception as ex:
+            print(f"❌ Error uploading {rel_path}: {ex}")
+            break
     return False
 
 
@@ -268,28 +291,70 @@ def main():
         print("❌ Token cannot be empty. Exiting.")
         sys.exit(1)
 
+    session = requests.Session()
+    session.headers.update({
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "ANSH-Uploader"
+    })
+
     print("\n🔍 Checking GitHub repository access...")
-    if not ensure_repo_exists(token):
-        print("❌ Could not verify or create repository. Please check your GitHub token permissions.")
+    if not ensure_repo_exists(session, token):
+        print("❌ Could not verify repository. Check your PAT permissions.")
         sys.exit(1)
 
+    print("🌳 Fetching remote file tree from GitHub...")
+    remote_tree = get_remote_tree(session)
+    print(f"   Found {len(remote_tree)} existing files on remote branch '{BRANCH}'.")
+
+    # Step 1: Purge any sensitive files that were uploaded in previous partial runs
+    purged = purge_remote_sensitive_files(session, remote_tree)
+    if purged > 0:
+        print(f"✅ Cleaned {purged} sensitive files from GitHub!\n")
+        # Refresh tree after purge
+        remote_tree = get_remote_tree(session)
+
+    # Step 2: Upload clean files
     base_dir = Path(__file__).resolve().parent
-    files = get_all_files(base_dir)
+    local_files = get_all_files(base_dir)
+    print(f"🚀 Found {len(local_files)} clean production files to sync.\n")
 
-    print(f"\n🚀 Found {len(files)} clean production files to sync.\n")
-    success_count = 0
+    uploaded_count = 0
+    skipped_count = 0
+    failed_count = 0
 
-    for idx, f in enumerate(files, 1):
+    for idx, f in enumerate(local_files, 1):
         rel = str(f.relative_to(base_dir)).replace("\\", "/")
-        print(f"[{idx:02d}/{len(files):02d}] Uploading: {rel}...", end="", flush=True)
-        if upload_file_to_github(token, base_dir, f):
+        try:
+            content = f.read_bytes()
+            local_sha = git_blob_sha(content)
+        except Exception:
+            local_sha = None
+
+        remote_sha = remote_tree.get(rel)
+
+        # Skip if identical on GitHub
+        if remote_sha and local_sha and remote_sha == local_sha:
+            skipped_count += 1
+            print(f"[{idx:03d}/{len(local_files):03d}] {rel} -> ⏩ [Skipped - Up to date]")
+            continue
+
+        print(f"[{idx:03d}/{len(local_files):03d}] Uploading: {rel}...", end="", flush=True)
+        if upload_file_to_github(session, base_dir, f, existing_sha=remote_sha):
             print(" ✅ OK")
-            success_count += 1
+            uploaded_count += 1
         else:
             print(" ❌ FAILED")
+            failed_count += 1
 
-    print(f"\n🎉 Finished! Uploaded {success_count}/{len(files)} files successfully!")
-    print(f"🔗 View your repository: https://github.com/{REPO_OWNER}/{REPO_NAME}\n")
+    print(f"\n=================================================================")
+    print(f"  🎉 Sync Complete! ")
+    print(f"  - Uploaded: {uploaded_count} files")
+    print(f"  - Already Up to Date: {skipped_count} files")
+    if failed_count:
+        print(f"  - Failed: {failed_count} files")
+    print(f"  🔗 View your repository: https://github.com/{REPO_OWNER}/{REPO_NAME}")
+    print(f"=================================================================\n")
 
 
 if __name__ == "__main__":
