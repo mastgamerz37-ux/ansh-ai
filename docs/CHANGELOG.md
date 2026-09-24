@@ -93,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Animated audio waveform bars.
   - Real-time terminal log viewer.
   - Live webcam preview thumbnail.
-  - Activation dialog with direct web links to [https://getyoursoft.page.gd](https://getyoursoft.page.gd).
+  - Activation dialog with direct web links to [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app).
 - **Executable Builder (`build_exe.py`) & Inno Setup (`installer/setup.iss`)**:
   - One-click build script to package ANSH into a standalone Windows installer.
 
