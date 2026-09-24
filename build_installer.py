@@ -29,7 +29,7 @@ def main():
     base_dir = Path(__file__).resolve().parent
     print("===========================================================")
     print("  ANSH - Your Own AI Friend - Production Installer Builder  ")
-    print("  Developer: Anshu Dubey | Website: https://getyoursoft.page.gd")
+    print("  Developer: Anshu Dubey | Website: https://getyoursoft.vercel.app")
     print("===========================================================\n")
 
     # Step 1: Run PyInstaller build
