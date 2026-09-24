@@ -3,7 +3,7 @@
 **Last Updated:** September 11, 2026  
 **Product:** ANSH — Your Own AI Friend  
 **Developer & Copyright Owner:** Anshu Dubey  
-**Official Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)  
+**Official Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)  
 
 ---
 
@@ -23,7 +23,7 @@ By downloading, installing, registering a product key, or otherwise using ANSH, 
 
 ### 2.2 Commercial Product Key Activation
 - Following expiration of the 3-day evaluation trial, full application execution is locked pending entry of a valid **Product Activation Key**.
-- Genuine product keys follow the standardized format: `ANSH-XXXX-XXXX-XXXX` and are issued exclusively through our official licensing portal: [https://getyoursoft.page.gd](https://getyoursoft.page.gd).
+- Genuine product keys follow the standardized format: `ANSH-XXXX-XXXX-XXXX` and are issued exclusively through our official licensing portal: [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app).
 - Upon successful activation, the Developer grants you a personal, non-exclusive, non-sublicensable license to execute ANSH for the purchased duration or perpetual term.
 
 ---
@@ -100,5 +100,5 @@ This Agreement shall be governed by and construed in accordance with the laws of
 For licensing inquiries, commercial bulk distribution, enterprise agreements, or technical assistance:
 
 - **Developer:** Anshu Dubey
-- **Licensing & Support Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Licensing & Support Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 - **Source Repository:** [https://github.com/mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
