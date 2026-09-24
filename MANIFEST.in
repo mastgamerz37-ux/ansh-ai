@@ -2,21 +2,44 @@ include face.png
 include readme.md
 include requirements.txt
 include version_info.txt
+include core/.env.example
 include keys/valid_keys.json
 
-recursive-include config *.json
+recursive-include config *.ico
 recursive-include skills *.json
-recursive-include memory/storage *.md
 recursive-include actions *.py
 recursive-include core *.py
 recursive-include dashboard *
+recursive-include docs *.md
 
 global-exclude *.pyc
 global-exclude *.pyo
 global-exclude *~
+global-exclude *.env
+global-exclude core/.env
+global-exclude keys.txt
 global-exclude keys/product_keys.txt
 global-exclude keys/generate_keys.py
+global-exclude validation.json
 global-exclude config/api_keys.json
 global-exclude config/license.json
+global-exclude .license
+global-exclude Untitled*
+global-exclude *.key
+global-exclude *.crt
+global-exclude *.pem
+global-exclude *.npz
+global-exclude *.wav
+global-exclude *.log
+global-exclude *.jsonl
 global-exclude *.spec
 global-exclude *.exe
+
+recursive-exclude config/certs *
+recursive-exclude data/secure *
+recursive-exclude data/voice_samples *
+recursive-exclude data/shadow_backups *
+recursive-exclude data/logs *
+recursive-exclude memory/storage *
+recursive-exclude scratch *
+recursive-exclude uploads *
