@@ -2,7 +2,7 @@
 
 # ⚡ ANSH — Your Own AI Friend
 ### Autonomous Multimodal Voice Assistant • Smart Island HUD • Real-Time AI Engine
-**Created & Developed by [Anshu Dubey](https://getyoursoft.page.gd)**
+**Created & Developed by [Anshu Dubey](https://getyoursoft.vercel.app)**
 
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -10,7 +10,7 @@
 [![PyPI version](https://img.shields.io/badge/PyPI-ansh--ai-orange.svg)](https://pypi.org/project/ansh-ai/)
 [![Auto-Updater](https://img.shields.io/badge/Auto--Updater-Enabled-brightgreen.svg)](https://github.com/mastgamerz37-ux/ansh-ai)
 
-> 🌐 **Website & Product Key Activation:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+> 🌐 **Website & Product Key Activation:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 
 </div>
 
@@ -57,7 +57,7 @@ ansh
 ### Option 2: Standalone Windows Installer
 
 Download the official standalone installer:
-👉 **[Download ANSH_Setup_v1.0.exe](https://getyoursoft.page.gd)**
+👉 **[Download ANSH_Setup_v1.0.exe](https://getyoursoft.vercel.app)**
 
 ---
 
@@ -97,7 +97,7 @@ ANSH comes with a **3-Day Free Trial (72 Hours)** upon first launch.
 
 - **Trial Period:** Full access to all capabilities with real-time trial countdown.
 - **Product Activation:** Once trial concludes, enter your product key (`ANSH-XXXX-XXXX-XXXX`) to unlock lifetime access.
-- **Get Keys:** Visit [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Get Keys:** Visit [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 
 ---
 
@@ -133,7 +133,7 @@ ansh-ai/
 ## 👤 Author & Support
 
 - **Lead Developer:** **Anshu Dubey**
-- **Website:** [https://getyoursoft.page.gd](https://getyoursoft.page.gd)
+- **Website:** [https://getyoursoft.vercel.app](https://getyoursoft.vercel.app)
 - **GitHub:** [@mastgamerz37-ux](https://github.com/mastgamerz37-ux)
 - **Repository:** [mastgamerz37-ux/ansh-ai](https://github.com/mastgamerz37-ux/ansh-ai)
 
